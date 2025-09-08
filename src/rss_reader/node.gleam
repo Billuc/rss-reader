@@ -1,0 +1,5 @@
+@external(javascript, "../node_ffi.js", "consoleLog")
+pub fn console_log(msg: String) -> Nil
+
+@external(javascript, "../node_ffi.js", "consoleError")
+pub fn console_error(msg: String) -> Nil

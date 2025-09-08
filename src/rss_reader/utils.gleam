@@ -1,19 +1,19 @@
-import gleam/result
+import gleam/javascript/promise
 import gleam/string
-import lustre/effect
-import plinth/browser/document
-import plinth/browser/element
+import rss_reader/node
 
-pub fn dispatch(msg: msg) -> effect.Effect(msg) {
-  effect.from(fn(dispatch) { dispatch(msg) })
-}
-
-pub fn get_value_from_id(id: String) {
-  use el <- result.try(document.get_element_by_id(id))
-  use v <- result.try(element.value(el))
-
-  case string.trim(v) {
-    "" -> Error(Nil)
-    value -> Ok(value)
-  }
+pub fn await_or_err(
+  promise: promise.Promise(Result(a, b)),
+  err: c,
+  callback: fn(a) -> promise.Promise(Result(d, c)),
+) -> promise.Promise(Result(d, c)) {
+  promise.await(promise, fn(res) {
+    case res {
+      Error(e) -> {
+        node.console_error("Error: " <> string.inspect(e))
+        promise.resolve(Error(err))
+      }
+      Ok(v) -> callback(v)
+    }
+  })
 }
