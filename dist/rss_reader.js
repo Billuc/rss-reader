@@ -2216,6 +2216,30 @@ function map_loop(loop$list, loop$fun, loop$acc) {
 function map2(list4, fun) {
   return map_loop(list4, fun, toList([]));
 }
+function take_loop(loop$list, loop$n, loop$acc) {
+  while (true) {
+    let list4 = loop$list;
+    let n = loop$n;
+    let acc = loop$acc;
+    let $ = n <= 0;
+    if ($) {
+      return reverse(acc);
+    } else {
+      if (list4 instanceof Empty) {
+        return reverse(acc);
+      } else {
+        let first$1 = list4.head;
+        let rest$1 = list4.tail;
+        loop$list = rest$1;
+        loop$n = n - 1;
+        loop$acc = prepend(first$1, acc);
+      }
+    }
+  }
+}
+function take(list4, n) {
+  return take_loop(list4, n, toList([]));
+}
 function append_loop(loop$first, loop$second) {
   while (true) {
     let first = loop$first;
@@ -3736,6 +3760,18 @@ function map_promise(promise, fn) {
   return promise.then(
     (value2) => PromiseLayer.wrap(fn(PromiseLayer.unwrap(value2)))
   );
+}
+function wait(delay) {
+  return new Promise((resolve2) => {
+    globalThis.setTimeout(resolve2, delay);
+  });
+}
+function race_promises(...promises) {
+  if (promises.length === 1) {
+    return Promise.race(promises[0]);
+  } else {
+    return Promise.race(promises);
+  }
 }
 
 // build/dev/javascript/gleam_javascript/gleam/javascript/promise.mjs
@@ -5511,15 +5547,15 @@ var Element = class extends CustomType {
   }
 };
 var Text2 = class extends CustomType {
-  constructor(content) {
+  constructor(content2) {
     super();
-    this.content = content;
+    this.content = content2;
   }
 };
 var Comment2 = class extends CustomType {
-  constructor(content) {
+  constructor(content2) {
     super();
-    this.content = content;
+    this.content = content2;
   }
 };
 function tag_open() {
@@ -5540,8 +5576,8 @@ function text_content() {
     "text content",
     (tok) => {
       if (tok instanceof Text) {
-        let content = tok[0];
-        return new Some(content);
+        let content2 = tok[0];
+        return new Some(content2);
       } else {
         return new None();
       }
@@ -5647,8 +5683,8 @@ function text() {
       let _block;
       let _pipe$1 = texts;
       _block = join(_pipe$1, "");
-      let content = _block;
-      return return$(new Text2(content));
+      let content2 = _block;
+      return return$(new Text2(content2));
     }
   );
 }
@@ -6215,8 +6251,8 @@ function get_texts(node) {
       _pipe,
       (child) => {
         if (child instanceof Text2) {
-          let content = child.content;
-          return new Ok(content);
+          let content2 = child.content;
+          return new Ok(content2);
         } else {
           return new Error(void 0);
         }
@@ -6242,9 +6278,9 @@ var RssDocument = class extends CustomType {
   }
 };
 var RssChannel = class extends CustomType {
-  constructor(title, link, description, language, copyright, managing_editor, web_master, pub_date, last_build_date, category, generator, docs, cloud, ttl, image, rating, text_input, skip_hours, skip_days, items) {
+  constructor(title2, link, description, language, copyright, managing_editor, web_master, pub_date, last_build_date, category, generator, docs, cloud, ttl, image, rating, text_input, skip_hours, skip_days, items) {
     super();
-    this.title = title;
+    this.title = title2;
     this.link = link;
     this.description = description;
     this.language = language;
@@ -6277,10 +6313,10 @@ var RssCloud = class extends CustomType {
   }
 };
 var RssImage = class extends CustomType {
-  constructor(url, title, link, width, height, description) {
+  constructor(url, title2, link, width, height, description) {
     super();
     this.url = url;
-    this.title = title;
+    this.title = title2;
     this.link = link;
     this.width = width;
     this.height = height;
@@ -6288,18 +6324,18 @@ var RssImage = class extends CustomType {
   }
 };
 var RssTextInput = class extends CustomType {
-  constructor(title, description, name2, link) {
+  constructor(title2, description, name2, link) {
     super();
-    this.title = title;
+    this.title = title2;
     this.description = description;
     this.name = name2;
     this.link = link;
   }
 };
 var RssItem = class extends CustomType {
-  constructor(title, link, description, author, category, comments, enclosure, guid, pub_date, source) {
+  constructor(title2, link, description, author, category, comments, enclosure, guid, pub_date, source) {
     super();
-    this.title = title;
+    this.title = title2;
     this.link = link;
     this.description = description;
     this.author = author;
@@ -6377,7 +6413,7 @@ function get_required_text(node, path) {
 function parse_text_input(node) {
   return try$(
     get_required_text(node, toList(["textInput", "title"])),
-    (title) => {
+    (title2) => {
       return try$(
         get_required_text(node, toList(["textInput", "description"])),
         (description) => {
@@ -6388,7 +6424,7 @@ function parse_text_input(node) {
                 get_required_text(node, toList(["textInput", "link"])),
                 (link) => {
                   return new Ok(
-                    new RssTextInput(title, description, name2, link)
+                    new RssTextInput(title2, description, name2, link)
                   );
                 }
               );
@@ -6416,7 +6452,7 @@ function parse_image(node) {
     (url) => {
       return try$(
         get_required_text(node, toList(["image", "title"])),
-        (title) => {
+        (title2) => {
           return try$(
             get_required_text(node, toList(["image", "link"])),
             (link) => {
@@ -6437,7 +6473,7 @@ function parse_image(node) {
                 toList(["image", "description"])
               );
               return new Ok(
-                new RssImage(url, title, link, width, height, description)
+                new RssImage(url, title2, link, width, height, description)
               );
             }
           );
@@ -6447,7 +6483,7 @@ function parse_image(node) {
   );
 }
 function parse_item(item) {
-  let title = get_optional_text(item, toList(["item", "title"]));
+  let title2 = get_optional_text(item, toList(["item", "title"]));
   let link = get_optional_text(item, toList(["item", "link"]));
   let description = get_optional_text(item, toList(["item", "description"]));
   let author = get_optional_text(item, toList(["item", "author"]));
@@ -6458,12 +6494,12 @@ function parse_item(item) {
   let pub_date = get_optional_text(item, toList(["item", "pubDate"]));
   let source = new None();
   if (description instanceof None) {
-    if (title instanceof None) {
+    if (title2 instanceof None) {
       return new Error("Item must have at least a title or description");
     } else {
       return new Ok(
         new RssItem(
-          title,
+          title2,
           link,
           description,
           author,
@@ -6479,7 +6515,7 @@ function parse_item(item) {
   } else {
     return new Ok(
       new RssItem(
-        title,
+        title2,
         link,
         description,
         author,
@@ -6496,7 +6532,7 @@ function parse_item(item) {
 function parse_channel(chan) {
   return try$(
     get_required_text(chan, toList(["channel", "title"])),
-    (title) => {
+    (title2) => {
       return try$(
         get_required_text(chan, toList(["channel", "link"])),
         (link) => {
@@ -6590,7 +6626,7 @@ function parse_channel(chan) {
               let items = _block$6;
               return new Ok(
                 new RssChannel(
-                  title,
+                  title2,
                   link,
                   description,
                   language,
@@ -6939,6 +6975,12 @@ function type_(control_type) {
 function value(control_value) {
   return attribute3("value", control_value);
 }
+function content(value2) {
+  return attribute3("content", value2);
+}
+function charset(value2) {
+  return attribute3("charset", value2);
+}
 
 // build/dev/javascript/lustre/lustre/internals/mutable_map.ffi.mjs
 function empty4() {
@@ -6977,12 +7019,12 @@ var Element2 = class extends CustomType {
   }
 };
 var Text3 = class extends CustomType {
-  constructor(kind, key, mapper, content) {
+  constructor(kind, key, mapper, content2) {
     super();
     this.kind = kind;
     this.key = key;
     this.mapper = mapper;
-    this.content = content;
+    this.content = content2;
   }
 };
 var UnsafeInnerHtml = class extends CustomType {
@@ -7090,8 +7132,8 @@ function element(key, mapper, namespace, tag2, attributes2, children2, keyed_chi
   );
 }
 var text_kind = 2;
-function text2(key, mapper, content) {
-  return new Text3(text_kind, key, mapper, content);
+function text2(key, mapper, content2) {
+  return new Text3(text_kind, key, mapper, content2);
 }
 var unsafe_inner_html_kind = 3;
 function unsafe_inner_html(key, mapper, namespace, tag2, attributes2, inner_html) {
@@ -7168,8 +7210,8 @@ function to_string_tree2(node) {
     if ($ === "") {
       return new$();
     } else {
-      let content = $;
-      return identity(escape2(content));
+      let content2 = $;
+      return identity(escape2(content2));
     }
   } else {
     let key = node.key;
@@ -7206,8 +7248,8 @@ function element2(tag2, attributes2, children2) {
     false
   );
 }
-function text3(content) {
-  return text2("", identity2, content);
+function text3(content2) {
+  return text2("", identity2, content2);
 }
 function unsafe_raw_html(namespace, tag2, attributes2, inner_html) {
   return unsafe_inner_html(
@@ -7538,19 +7580,34 @@ function await_or_err(promise, err, callback) {
     }
   );
 }
+function await_with_timeout(promise, timeout_ms, err) {
+  let _block;
+  let _pipe = wait(timeout_ms);
+  _block = map_promise(_pipe, (_) => {
+    return new Error(err);
+  });
+  let timeout_promise = _block;
+  return race_promises(toList([promise, timeout_promise]));
+}
 
 // build/dev/javascript/lustre/lustre/element/html.mjs
 function html(attrs, children2) {
   return element2("html", attrs, children2);
 }
-function text4(content) {
-  return text3(content);
+function text4(content2) {
+  return text3(content2);
 }
 function head(attrs, children2) {
   return element2("head", attrs, children2);
 }
+function meta(attrs) {
+  return element2("meta", attrs, empty_list);
+}
 function style2(attrs, css) {
   return unsafe_raw_html("", "style", attrs, css);
+}
+function title(attrs, content2) {
+  return element2("title", attrs, toList([text4(content2)]));
 }
 function body(attrs, children2) {
   return element2("body", attrs, children2);
@@ -7560,9 +7617,6 @@ function h2(attrs, children2) {
 }
 function div(attrs, children2) {
   return element2("div", attrs, children2);
-}
-function hr(attrs) {
-  return element2("hr", attrs, empty_list);
 }
 function p(attrs, children2) {
   return element2("p", attrs, children2);
@@ -7655,7 +7709,10 @@ function feed_view(feed) {
       div(
         toList([]),
         map2(
-          feed.channel.items,
+          (() => {
+            let _pipe = feed.channel.items;
+            return take(_pipe, 10);
+          })(),
           (item) => {
             let _block;
             let _pipe = item.description;
@@ -7676,20 +7733,24 @@ function feed_view(feed) {
                     )
                   ])
                 ),
-                p(toList([]), toList([text4(description)])),
-                a(
-                  (() => {
-                    let _pipe$2 = map(
-                      item.link,
-                      (l) => {
-                        return toList([href(l)]);
-                      }
-                    );
-                    return unwrap(_pipe$2, toList([]));
-                  })(),
-                  toList([text4("Read more")])
-                ),
-                hr(toList([]))
+                div(toList([]), toList([text4(description)])),
+                div(
+                  toList([]),
+                  toList([
+                    a(
+                      (() => {
+                        let _pipe$2 = map(
+                          item.link,
+                          (l) => {
+                            return toList([href(l)]);
+                          }
+                        );
+                        return unwrap(_pipe$2, toList([]));
+                      })(),
+                      toList([text4("Read more")])
+                    )
+                  ])
+                )
               ])
             );
           }
@@ -7717,7 +7778,7 @@ function add_feed_button() {
     )
   ]);
 }
-function feed_inputs_view() {
+function feed_inputs_view(initial_values) {
   return div(
     toList([]),
     prepend(
@@ -7726,7 +7787,17 @@ function feed_inputs_view() {
         toList([
           div(
             toList([id(feed_inputs_id)]),
-            toList([input(toList([name("feed-url[]")]))])
+            map2(
+              initial_values,
+              (value2) => {
+                return input(
+                  toList([
+                    name("feed-url[]"),
+                    value(value2)
+                  ])
+                );
+              }
+            )
           ),
           input(
             toList([type_("submit"), value("Get feeds")])
@@ -7744,6 +7815,14 @@ function view(urls, errors) {
       head(
         toList([]),
         toList([
+          meta(toList([charset("UTF-8")])),
+          meta(
+            toList([
+              name("viewport"),
+              content("width=device-width, initial-scale=1.0")
+            ])
+          ),
+          title(toList([]), "RSS Reader"),
           script(
             toList([
               src(
@@ -7755,12 +7834,12 @@ function view(urls, errors) {
           ),
           style2(
             toList([]),
-            "\n.loader {\n    width: 48px;\n    height: 48px;\n    border: 5px solid #FFF;\n    border-bottom-color: transparent;\n    border-radius: 50%;\n    display: inline-block;\n    box-sizing: border-box;\n    animation: rotation 1s linear infinite;\n}\n\n@keyframes rotation {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(360deg);\n    }\n}"
+            "\n.loader {\n    width: 24px;\n    height: 24px;\n    border: 3px solid #000;\n    border-bottom-color: transparent;\n    border-radius: 50%;\n    display: inline-block;\n    box-sizing: border-box;\n    animation: rotation 1s linear infinite;\n      margin: 1em;\n}\n\n@keyframes rotation {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(360deg);\n    }\n}\n\n      details {\n      background: antiquewhite;\n        border-bottom: 1px solid black;\n      }\n      details:first-of-type {\n        border-top: 1px solid black;\n      }\n\n      details > *:not(summary) {\n      margin: 0.25em 1.5em;\n      opacity: 0.8;\n      }\n\n      summary {\n        cursor: pointer;\n        padding: 0.5em 1em;\n      border-bottom: none;\n      font-size: 1.1em;\n      }\n\n      details[open] summary {\n      border-bottom: 1px solid black;\n      }\n"
           )
         ])
       ),
       body(
-        toList([]),
+        toList([style("font-family", "monospace")]),
         toList([
           div(
             toList([]),
@@ -7771,7 +7850,7 @@ function view(urls, errors) {
                   return error_view(error);
                 })
               ),
-              feed_inputs_view(),
+              feed_inputs_view(urls),
               div2(
                 toList([]),
                 map2(
@@ -7861,9 +7940,15 @@ function handler(event2) {
       let _pipe$1 = map_get(_pipe, "feed-url");
       _block$1 = unwrap2(_pipe$1, "");
       let url = _block$1;
-      let _pipe$2 = fetch_feed(url);
       _block = map_promise(
-        _pipe$2,
+        (() => {
+          let _pipe$2 = fetch_feed(url);
+          return await_with_timeout(
+            _pipe$2,
+            3e3,
+            "Timeout fetching URL: " + url
+          );
+        })(),
         (res2) => {
           let _block$2;
           if (res2 instanceof Ok) {
@@ -7873,10 +7958,10 @@ function handler(event2) {
             let e = res2[0];
             _block$2 = error_view(e);
           }
-          let _pipe$3 = _block$2;
-          let _pipe$4 = to_string4(_pipe$3);
-          let _pipe$5 = html_response(_pipe$4);
-          return toResponse(_pipe$5);
+          let _pipe$2 = _block$2;
+          let _pipe$3 = to_string4(_pipe$2);
+          let _pipe$4 = html_response(_pipe$3);
+          return toResponse(_pipe$4);
         }
       );
     } else {

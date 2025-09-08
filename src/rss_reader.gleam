@@ -48,16 +48,18 @@ pub fn handler(event) {
             |> dict.get("feed-url")
             |> result.unwrap("")
 
-          fetch_feed(url)
-          |> promise.map(fn(res) {
-            case res {
-              Ok(feed) -> view.feed_view(feed)
-              Error(e) -> view.error_view(e)
-            }
-            |> element.to_string()
-            |> aws.html_response()
-            |> aws.return()
-          })
+          use res <- promise.map(
+            fetch_feed(url)
+            |> utils.await_with_timeout(3000, "Timeout fetching URL: " <> url),
+          )
+
+          case res {
+            Ok(feed) -> view.feed_view(feed)
+            Error(e) -> view.error_view(e)
+          }
+          |> element.to_string()
+          |> aws.html_response()
+          |> aws.return()
         }
         _ ->
           aws.html_response("Not found")
