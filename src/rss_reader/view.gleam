@@ -28,6 +28,11 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
       html.style(
         [],
         "
+body {
+    background: antiquewhite;
+    font-family: \"Georgia\", serif;
+}
+
 .loader {
     width: 24px;
     height: 24px;
@@ -37,7 +42,7 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
     display: inline-block;
     box-sizing: border-box;
     animation: rotation 1s linear infinite;
-      margin: 1em;
+    margin: 1em;
 }
 
 @keyframes rotation {
@@ -49,33 +54,44 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
     }
 }
 
-      details {
-      background: antiquewhite;
-        border-bottom: 1px solid black;
-      }
-      details:first-of-type {
-        border-top: 1px solid black;
-      }
+.feed {}
 
-      details > *:not(summary) {
-      margin: 0.25em 1.5em;
-      opacity: 0.8;
-      }
+.feed h2 {
+  text-transform: uppercase;
+  display: flex;
+  align-items: end;
+}
 
-      summary {
-        cursor: pointer;
-        padding: 0.5em 1em;
-      border-bottom: none;
-      font-size: 1.1em;
-      }
+.feed h2 span {
+  max-width: 30ch;
+}
 
-      details[open] summary {
-      border-bottom: 1px solid black;
-      }
+.feed h2 div {
+  flex-grow: 1;
+  border-bottom: 2px solid #888;
+  margin-left: 0.5em;
+}
+
+.feed-items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1em;
+}
+
+.feed-items .feed-item:first-of-type {
+  grid-area: span 2 / span 2;
+}
+
+.item-description {
+  font-size: smaller;
+}
 ",
       ),
     ]),
-    html.body([attribute.style("font-family", "monospace")], [
+    html.body([], [
+      html.h1([attribute.style("text-align", "center")], [
+        html.text("RSS Reader"),
+      ]),
       html.div([], [
         html.div([], {
           use error <- list.map(errors)
@@ -102,17 +118,22 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
 }
 
 pub fn feed_view(feed: glisse.RssDocument) -> element.Element(Nil) {
-  html.div([], [
-    html.h2([], [html.text(feed.channel.title)]),
-    html.div([], {
-      use item <- list.map(feed.channel.items |> list.take(10))
+  html.div([attribute.class("feed")], [
+    html.h2([], [
+      html.span([], [html.text(feed.channel.title)]),
+      html.div([], []),
+    ]),
+    html.div([attribute.class("feed-items")], {
+      use item <- list.map(feed.channel.items)
       let description =
         item.description |> option.unwrap("") |> string.replace("\"", "")
 
-      html.details([], [
-        html.summary([], [html.text(item.title |> option.unwrap("No title"))]),
-        html.div([], [html.text(description)]),
-        html.div([], [
+      html.div([attribute.class("feed-item")], [
+        html.h3([attribute.class("item-title")], [
+          html.text(item.title |> option.unwrap("No title")),
+        ]),
+        html.p([attribute.class("item-description")], [
+          html.text(description),
           html.a(
             option.map(item.link, fn(l) { [attribute.href(l)] })
               |> option.unwrap([]),
