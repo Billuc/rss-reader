@@ -13,6 +13,8 @@ import rss_reader/utils
 import rss_reader/view
 
 pub fn handler(event) {
+  let favicon = node.read_file_sync("./favicon.ico")
+
   node.console_log("Received event: " <> string.inspect(event))
   let ev = aws.decode_event(event)
 
@@ -60,6 +62,11 @@ pub fn handler(event) {
           |> element.to_string()
           |> aws.html_response()
           |> aws.return()
+        }
+        "/favicon.ico" -> {
+          aws.binary_response(favicon, "image/x-icon")
+          |> aws.return()
+          |> promise.resolve()
         }
         _ ->
           aws.html_response("Not found")

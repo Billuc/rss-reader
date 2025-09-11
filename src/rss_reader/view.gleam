@@ -15,6 +15,11 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
         attribute.name("viewport"),
         attribute.content("width=device-width, initial-scale=1.0"),
       ]),
+      html.link([
+        attribute.rel("icon"),
+        attribute.type_("image/x-icon"),
+        attribute.href("/favicon.ico"),
+      ]),
       html.title([], "RSS Reader"),
       html.script(
         [
@@ -57,7 +62,7 @@ body {
 
 .feeds {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(max(300px, 30%), 1fr));
   margin-block: 1em;
   row-gap: 2em;
 }
@@ -150,11 +155,12 @@ summary.item-title {
 }
 
 #feed-inputs input {
-  padding: 0.251em 0 em 0.5em;
+  padding: 0.25em 1em 0.25em 0.5em;
   min-width: 200px;
   border-width: 0;
   border-left: 4px solid coral;
   background: floralwhite;
+  text-overflow: ellipsis;
 }
 
 .sources form input[type=\"submit\"], .sources button {
