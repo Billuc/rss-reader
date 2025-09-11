@@ -29,8 +29,9 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
         [],
         "
 body {
-    background: antiquewhite;
-    font-family: \"Georgia\", serif;
+  background: antiquewhite;
+  font-family: \"Georgia\", serif;
+  margin: 0;
 }
 
 .loader {
@@ -54,65 +55,147 @@ body {
     }
 }
 
-.feed {}
+.feeds {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  margin-block: 1em;
+  row-gap: 2em;
+}
+
+.feed {
+  padding: 1em 2em;
+  border-right: 1px solid #aaa6;
+}
 
 .feed h2 {
   text-transform: uppercase;
   display: flex;
   align-items: end;
-}
-
-.feed h2 span {
-  max-width: 30ch;
-}
-
-.feed h2 div {
-  flex-grow: 1;
-  border-bottom: 2px solid #888;
-  margin-left: 0.5em;
+  gap: 0.5em;
+  margin-top: 0;
+  margin-bottom: 1.25em;
 }
 
 .feed-items {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+  max-height: 500px;
+  overflow-y: auto;
 }
 
-.feed-items .feed-item:first-of-type {
-  grid-area: span 2 / span 2;
+.feed-items .feed-item:nth-child(even) {
+  align-self: flex-end;
+}
+.feed-items .feed-item:nth-child(odd) {
+  align-self: flex-start;
+}
+.feed-items .feed-item {
+  width: 90%;
+}
+
+.feed-items .feed-item:first-of-type .item-title {
+  font-size: 1.2em;
+  width: 100%;
 }
 
 .item-description {
   font-size: smaller;
+  opacity: 0.7;
+  padding-left: 1em;
+}
+
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 1em;
+  margin: 2em;
+}
+
+header h1 {
+  margin: 0;
+}
+
+.divider {
+  border-bottom: 1px solid #aaa;
+  flex-grow: 1;
+}
+
+summary.item-title {
+  font-size: 0.9em;
+  padding-left: 1em;
+  border-left: 4px solid coral;
+}
+
+.sources {
+  margin-inline: 4em;
+  padding: 0.5em 1em;
+  border-block: 1px solid #0002;
+}
+@media (max-width: 600px) {
+  .sources {
+    margin-inline: 1em;
+  }
+}
+
+.sources form {
+  margin: 1em 0 0.5em;
+}
+
+#feed-inputs {
+  display:flex;
+  flex-wrap: wrap;
+  gap: 0.25em 0.5em;
+  margin-bottom: 0.5em;
+}
+
+#feed-inputs input {
+  padding: 0.251em 0 em 0.5em;
+  min-width: 200px;
+  border-width: 0;
+  border-left: 4px solid coral;
+  background: floralwhite;
+}
+
+.sources form input[type=\"submit\"], .sources button {
+  border: 0;
+  border-radius: 0.5em;
+  background: coral;
+  cursor: pointer;
+  box-shadow: 0 2px 3px #0006;
+  padding: 0.2em 0.5em;
+  font-size: 14px;
 }
 ",
       ),
     ]),
     html.body([], [
-      html.h1([attribute.style("text-align", "center")], [
-        html.text("RSS Reader"),
+      html.header([], [
+        html.div([attribute.class("divider")], []),
+        html.h1([attribute.style("text-align", "center")], [
+          html.text("RSS Reader"),
+        ]),
+        html.div([attribute.class("divider")], []),
       ]),
-      html.div([], [
-        html.div([], {
-          use error <- list.map(errors)
-          error_view(error)
-        }),
-        feed_inputs_view(urls),
-        keyed.div([], {
-          use url <- list.map(urls)
-          #(
-            url,
-            html.div(
-              [
-                attribute.attribute("hx-get", "/items?feed-url=" <> url),
-                attribute.attribute("hx-trigger", "load"),
-                attribute.attribute("hx-target", "this"),
-              ],
-              [html.span([attribute.class("loader")], [])],
-            ),
-          )
-        }),
-      ]),
+      html.div([attribute.style("margin-inline", "1em")], {
+        use error <- list.map(errors)
+        error_view(error)
+      }),
+      feed_inputs_view(urls),
+      keyed.div([attribute.class("feeds")], {
+        use url <- list.map(urls)
+        #(
+          url,
+          html.div(
+            [
+              attribute.attribute("hx-get", "/items?feed-url=" <> url),
+              attribute.attribute("hx-trigger", "load"),
+              attribute.attribute("hx-target", "this"),
+            ],
+            [html.span([attribute.class("loader")], [])],
+          ),
+        )
+      }),
     ]),
   ])
 }
@@ -121,16 +204,16 @@ pub fn feed_view(feed: glisse.RssDocument) -> element.Element(Nil) {
   html.div([attribute.class("feed")], [
     html.h2([], [
       html.span([], [html.text(feed.channel.title)]),
-      html.div([], []),
+      html.div([attribute.class("divider")], []),
     ]),
     html.div([attribute.class("feed-items")], {
       use item <- list.map(feed.channel.items)
       let description =
         item.description |> option.unwrap("") |> string.replace("\"", "")
 
-      html.div([attribute.class("feed-item")], [
-        html.h3([attribute.class("item-title")], [
-          html.text(item.title |> option.unwrap("No title")),
+      html.details([attribute.class("feed-item")], [
+        html.summary([attribute.class("item-title")], [
+          html.text(item.title |> option.unwrap("Untitled")),
         ]),
         html.p([attribute.class("item-description")], [
           html.text(description),
@@ -152,23 +235,31 @@ pub fn error_view(error: String) -> element.Element(Nil) {
 const feed_inputs_id = "feed-inputs"
 
 fn feed_inputs_view(initial_values: List(String)) -> element.Element(Nil) {
-  html.div([], [
+  html.details([attribute.class("sources")], [
+    html.summary([attribute.style("font-weight", "bold")], [
+      html.text("Sources"),
+    ]),
     html.form([attribute.method("GET"), attribute.action("/")], [
       html.div([attribute.id(feed_inputs_id)], {
         use value <- list.map(initial_values)
         html.input([attribute.name("feed-url[]"), attribute.value(value)])
       }),
       html.input([attribute.type_("submit"), attribute.value("Get feeds")]),
+      ..add_feed_button()
     ]),
-    ..add_feed_button()
   ])
 }
 
 fn add_feed_button() {
   [
-    html.button([attribute.attribute("onclick", "addFeedInput()")], [
-      html.text("Add Feed"),
-    ]),
+    html.button(
+      [
+        attribute.attribute("onclick", "addFeedInput()"),
+        attribute.type_("button"),
+        attribute.style("margin-left", "0.5em"),
+      ],
+      [html.text("Add Feed")],
+    ),
     html.script([], "
     function addFeedInput() {
       const form = document.getElementById('" <> feed_inputs_id <> "');

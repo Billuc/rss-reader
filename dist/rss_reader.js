@@ -2216,30 +2216,6 @@ function map_loop(loop$list, loop$fun, loop$acc) {
 function map2(list4, fun) {
   return map_loop(list4, fun, toList([]));
 }
-function take_loop(loop$list, loop$n, loop$acc) {
-  while (true) {
-    let list4 = loop$list;
-    let n = loop$n;
-    let acc = loop$acc;
-    let $ = n <= 0;
-    if ($) {
-      return reverse(acc);
-    } else {
-      if (list4 instanceof Empty) {
-        return reverse(acc);
-      } else {
-        let first$1 = list4.head;
-        let rest$1 = list4.tail;
-        loop$list = rest$1;
-        loop$n = n - 1;
-        loop$acc = prepend(first$1, acc);
-      }
-    }
-  }
-}
-function take(list4, n) {
-  return take_loop(list4, n, toList([]));
-}
 function append_loop(loop$first, loop$second) {
   while (true) {
     let first = loop$first;
@@ -7612,6 +7588,12 @@ function title(attrs, content2) {
 function body(attrs, children2) {
   return element2("body", attrs, children2);
 }
+function header(attrs, children2) {
+  return element2("header", attrs, children2);
+}
+function h1(attrs, children2) {
+  return element2("h1", attrs, children2);
+}
 function h2(attrs, children2) {
   return element2("h2", attrs, children2);
 }
@@ -7703,16 +7685,19 @@ function div2(attributes2, children2) {
 // build/dev/javascript/rss_reader/rss_reader/view.mjs
 function feed_view(feed) {
   return div(
-    toList([]),
+    toList([class$("feed")]),
     toList([
-      h2(toList([]), toList([text4(feed.channel.title)])),
-      div(
+      h2(
         toList([]),
+        toList([
+          span(toList([]), toList([text4(feed.channel.title)])),
+          div(toList([class$("divider")]), toList([]))
+        ])
+      ),
+      div(
+        toList([class$("feed-items")]),
         map2(
-          (() => {
-            let _pipe = feed.channel.items;
-            return take(_pipe, 10);
-          })(),
+          feed.channel.items,
           (item) => {
             let _block;
             let _pipe = item.description;
@@ -7720,23 +7705,23 @@ function feed_view(feed) {
             _block = replace(_pipe$1, '"', "");
             let description = _block;
             return details(
-              toList([]),
+              toList([class$("feed-item")]),
               toList([
                 summary(
-                  toList([]),
+                  toList([class$("item-title")]),
                   toList([
                     text4(
                       (() => {
                         let _pipe$2 = item.title;
-                        return unwrap(_pipe$2, "No title");
+                        return unwrap(_pipe$2, "Untitled");
                       })()
                     )
                   ])
                 ),
-                div(toList([]), toList([text4(description)])),
-                div(
-                  toList([]),
+                p(
+                  toList([class$("item-description")]),
                   toList([
+                    text4(description),
                     a(
                       (() => {
                         let _pipe$2 = map(
@@ -7769,7 +7754,11 @@ var feed_inputs_id = "feed-inputs";
 function add_feed_button() {
   return toList([
     button(
-      toList([attribute3("onclick", "addFeedInput()")]),
+      toList([
+        attribute3("onclick", "addFeedInput()"),
+        type_("button"),
+        style("margin-left", "0.5em")
+      ]),
       toList([text4("Add Feed")])
     ),
     script(
@@ -7779,12 +7768,16 @@ function add_feed_button() {
   ]);
 }
 function feed_inputs_view(initial_values) {
-  return div(
-    toList([]),
-    prepend(
+  return details(
+    toList([class$("sources")]),
+    toList([
+      summary(
+        toList([style("font-weight", "bold")]),
+        toList([text4("Sources")])
+      ),
       form(
         toList([method("GET"), action("/")]),
-        toList([
+        prepend(
           div(
             toList([id(feed_inputs_id)]),
             map2(
@@ -7799,13 +7792,15 @@ function feed_inputs_view(initial_values) {
               }
             )
           ),
-          input(
-            toList([type_("submit"), value("Get feeds")])
+          prepend(
+            input(
+              toList([type_("submit"), value("Get feeds")])
+            ),
+            add_feed_button()
           )
-        ])
-      ),
-      add_feed_button()
-    )
+        )
+      )
+    ])
   );
 }
 function view(urls, errors) {
@@ -7834,51 +7829,54 @@ function view(urls, errors) {
           ),
           style2(
             toList([]),
-            "\n.loader {\n    width: 24px;\n    height: 24px;\n    border: 3px solid #000;\n    border-bottom-color: transparent;\n    border-radius: 50%;\n    display: inline-block;\n    box-sizing: border-box;\n    animation: rotation 1s linear infinite;\n      margin: 1em;\n}\n\n@keyframes rotation {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(360deg);\n    }\n}\n\n      details {\n      background: antiquewhite;\n        border-bottom: 1px solid black;\n      }\n      details:first-of-type {\n        border-top: 1px solid black;\n      }\n\n      details > *:not(summary) {\n      margin: 0.25em 1.5em;\n      opacity: 0.8;\n      }\n\n      summary {\n        cursor: pointer;\n        padding: 0.5em 1em;\n      border-bottom: none;\n      font-size: 1.1em;\n      }\n\n      details[open] summary {\n      border-bottom: 1px solid black;\n      }\n"
+            '\nbody {\n  background: antiquewhite;\n  font-family: "Georgia", serif;\n  margin: 0;\n}\n\n.loader {\n    width: 24px;\n    height: 24px;\n    border: 3px solid #000;\n    border-bottom-color: transparent;\n    border-radius: 50%;\n    display: inline-block;\n    box-sizing: border-box;\n    animation: rotation 1s linear infinite;\n    margin: 1em;\n}\n\n@keyframes rotation {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(360deg);\n    }\n}\n\n.feeds {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));\n  margin-block: 1em;\n  row-gap: 2em;\n}\n\n.feed {\n  padding: 1em 2em;\n  border-right: 1px solid #aaa6;\n}\n\n.feed h2 {\n  text-transform: uppercase;\n  display: flex;\n  align-items: end;\n  gap: 0.5em;\n  margin-top: 0;\n  margin-bottom: 1.25em;\n}\n\n.feed-items {\n  display: flex;\n  flex-direction: column;\n  gap: 1.5em;\n  max-height: 500px;\n  overflow-y: auto;\n}\n\n.feed-items .feed-item:nth-child(even) {\n  align-self: flex-end;\n}\n.feed-items .feed-item:nth-child(odd) {\n  align-self: flex-start;\n}\n.feed-items .feed-item {\n  width: 90%;\n}\n\n.feed-items .feed-item:first-of-type .item-title {\n  font-size: 1.2em;\n  width: 100%;\n}\n\n.item-description {\n  font-size: smaller;\n  opacity: 0.7;\n  padding-left: 1em;\n}\n\nheader {\n  display: flex;\n  align-items: baseline;\n  gap: 1em;\n  margin: 2em;\n}\n\nheader h1 {\n  margin: 0;\n}\n\n.divider {\n  border-bottom: 1px solid #aaa;\n  flex-grow: 1;\n}\n\nsummary.item-title {\n  font-size: 0.9em;\n  padding-left: 1em;\n  border-left: 4px solid coral;\n}\n\n.sources {\n  margin-inline: 4em;\n  padding: 0.5em 1em;\n  border-block: 1px solid #0002;\n}\n@media (max-width: 600px) {\n  .sources {\n    margin-inline: 1em;\n  }\n}\n\n.sources form {\n  margin: 1em 0 0.5em;\n}\n\n#feed-inputs {\n  display:flex;\n  flex-wrap: wrap;\n  gap: 0.25em 0.5em;\n  margin-bottom: 0.5em;\n}\n\n#feed-inputs input {\n  padding: 0.251em 0 em 0.5em;\n  min-width: 200px;\n  border-width: 0;\n  border-left: 4px solid coral;\n  background: floralwhite;\n}\n\n.sources form input[type="submit"], .sources button {\n  border: 0;\n  border-radius: 0.5em;\n  background: coral;\n  cursor: pointer;\n  box-shadow: 0 2px 3px #0006;\n  padding: 0.2em 0.5em;\n  font-size: 14px;\n}\n'
           )
         ])
       ),
       body(
-        toList([style("font-family", "monospace")]),
+        toList([]),
         toList([
-          div(
+          header(
             toList([]),
             toList([
-              div(
-                toList([]),
-                map2(errors, (error) => {
-                  return error_view(error);
-                })
+              div(toList([class$("divider")]), toList([])),
+              h1(
+                toList([style("text-align", "center")]),
+                toList([text4("RSS Reader")])
               ),
-              feed_inputs_view(urls),
-              div2(
-                toList([]),
-                map2(
-                  urls,
-                  (url) => {
-                    return [
-                      url,
-                      div(
-                        toList([
-                          attribute3(
-                            "hx-get",
-                            "/items?feed-url=" + url
-                          ),
-                          attribute3("hx-trigger", "load"),
-                          attribute3("hx-target", "this")
-                        ]),
-                        toList([
-                          span(
-                            toList([class$("loader")]),
-                            toList([])
-                          )
-                        ])
-                      )
-                    ];
-                  }
-                )
-              )
+              div(toList([class$("divider")]), toList([]))
             ])
+          ),
+          div(
+            toList([style("margin-inline", "1em")]),
+            map2(errors, (error) => {
+              return error_view(error);
+            })
+          ),
+          feed_inputs_view(urls),
+          div2(
+            toList([class$("feeds")]),
+            map2(
+              urls,
+              (url) => {
+                return [
+                  url,
+                  div(
+                    toList([
+                      attribute3("hx-get", "/items?feed-url=" + url),
+                      attribute3("hx-trigger", "load"),
+                      attribute3("hx-target", "this")
+                    ]),
+                    toList([
+                      span(
+                        toList([class$("loader")]),
+                        toList([])
+                      )
+                    ])
+                  )
+                ];
+              }
+            )
           )
         ])
       )
