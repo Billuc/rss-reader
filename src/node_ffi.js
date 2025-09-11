@@ -9,5 +9,9 @@ export function consoleError(message) {
 }
 
 export function readFileSync(path) {
-  return fs.readFileSync(path);
+  return fs.readFileSync(path, { encoding: "utf8" });
+}
+
+export function readBase64FileSync(path) {
+  return fs.readFileSync(path, { encoding: "base64" });
 }

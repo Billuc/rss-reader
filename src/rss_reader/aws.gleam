@@ -140,13 +140,16 @@ pub fn html_response(html: String) -> LambdaResponse {
   )
 }
 
-pub fn binary_response(data: String, content_type: String) -> LambdaResponse {
+pub fn binary_response(
+  base64data: String,
+  content_type: String,
+) -> LambdaResponse {
   LambdaResponse(
     status_code: 200,
     headers: dict.from_list([#("Content-Type", content_type)]),
     cookies: [],
-    body: data,
-    is_base64_encoded: False,
+    body: base64data,
+    is_base64_encoded: True,
   )
 }
 

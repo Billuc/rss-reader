@@ -13,7 +13,7 @@ import rss_reader/utils
 import rss_reader/view
 
 pub fn handler(event) {
-  let favicon = node.read_file_sync("./favicon.ico")
+  let favicon = node.read_base64_file_sync("./favicon.ico")
 
   node.console_log("Received event: " <> string.inspect(event))
   let ev = aws.decode_event(event)
