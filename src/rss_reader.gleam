@@ -1,4 +1,5 @@
 import gleam/dict
+import gleam/dynamic
 import gleam/fetch
 import gleam/http/request
 import gleam/javascript/promise
@@ -12,8 +13,8 @@ import rss_reader/node
 import rss_reader/utils
 import rss_reader/view
 
-pub fn handler(event) {
-  let favicon = node.read_base64_file_sync("./favicon.ico")
+pub fn handler(event: dynamic.Dynamic) -> promise.Promise(dynamic.Dynamic) {
+  let favicon = node.read_base64_file_sync("./favicon.ico") |> result.unwrap("")
 
   node.console_log("Received event: " <> string.inspect(event))
   let ev = aws.decode_event(event)

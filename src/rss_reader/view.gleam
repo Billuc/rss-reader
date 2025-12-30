@@ -61,15 +61,31 @@ body {
 }
 
 .feeds {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(max(300px, 30%), 1fr));
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: flex-start;
   margin-block: 1em;
-  row-gap: 2em;
+  column-gap: 2em;
+  scroll-snap-type: x mandatory;
+  overflow-x: auto;
+  height: calc(100vh - 12rem);
+}
+
+.feed-container {
+  display:contents;
 }
 
 .feed {
   padding: 1em 2em;
   border-right: 1px solid #aaa6;
+  width: clamp(30%, 400px, 100%);
+  scroll-snap-align: start;
+  overflow-y: auto;
+}
+
+.feed:last-of-type {
+  border-right: none;
 }
 
 .feed h2 {
@@ -85,7 +101,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5em;
-  max-height: 500px;
   overflow-y: auto;
 }
 
@@ -197,6 +212,7 @@ summary.item-title {
               attribute.attribute("hx-get", "/items?feed-url=" <> url),
               attribute.attribute("hx-trigger", "load"),
               attribute.attribute("hx-target", "this"),
+              attribute.class("feed-container"),
             ],
             [html.span([attribute.class("loader")], [])],
           ),
