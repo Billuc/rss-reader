@@ -64,7 +64,7 @@ body {
 .feeds {
   display: flex;
   flex-flow: row nowrap;
-  justify-content: center;
+  justify-content: space-around;
   align-items: flex-start;
   margin-block: 1em;
   column-gap: 2em;
