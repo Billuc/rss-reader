@@ -199,6 +199,15 @@ fn query_to_properties(query: String) -> dynamic.Dynamic {
   query
   |> uri.parse_query
   |> result.unwrap([])
+  |> list.fold(dict.new(), fn(acc, kv) {
+    dict.upsert(acc, kv.0, fn(old) {
+      case old {
+        option.Some(v) -> v <> "," <> kv.1
+        option.None -> kv.1
+      }
+    })
+  })
+  |> dict.to_list()
   |> list.map(fn(kv) { #(dynamic.string(kv.0), dynamic.string(kv.1)) })
   |> dynamic.properties
 }
