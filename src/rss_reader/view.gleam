@@ -49,6 +49,7 @@ body {
     box-sizing: border-box;
     animation: rotation 1s linear infinite;
     margin: 1em;
+    flex: 0 0 auto;
 }
 
 @keyframes rotation {
@@ -82,6 +83,9 @@ body {
   width: clamp(30%, 400px, 100%);
   scroll-snap-align: start;
   overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto;
 }
 
 .feed:last-of-type {
