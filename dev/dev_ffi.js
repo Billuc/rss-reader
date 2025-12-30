@@ -24,8 +24,6 @@ export function deno_spawn(args) {
 
     const command = new Deno.Command(cmd, {
       args: rest,
-      stdin: "piped",
-      stdout: "piped",
     });
     const child = command.spawn();
     return new $gleam.Ok(child);
