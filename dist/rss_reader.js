@@ -163,6 +163,7 @@ div:has(.loader) {
   width: min(clamp(50%, 400px, 100%), 600px);
   flex: 0 0 auto;
   scroll-snap-align: center;
+  height: 100%;
 }
 
 .feed {
@@ -214,6 +215,7 @@ div:has(.loader) {
   font-size: smaller;
   opacity: 0.8;
   padding-left: 1em;
+  word-break: break-word;
 }
 
 header {
