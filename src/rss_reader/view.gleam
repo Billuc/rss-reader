@@ -44,18 +44,6 @@ body {
   padding: 1rem 6rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #222222;
-    color: seashell;
-  }
-
-  input {
-    background: #2e2e2e;
-    color: #e0e0e0;
-  }
-}
-
 a {
   color: coral;
 }
@@ -208,7 +196,8 @@ summary.item-title {
   min-width: 200px;
   border-width: 0;
   border-left: 2px solid coral;
-  background: floralwhite;
+  background: color-mix(in oklab, floralwhite 80%, #222222);
+  color: currentColor;
   text-overflow: ellipsis;
   flex-shrink: 1;
   min-width: 150px;
@@ -234,6 +223,18 @@ summary.item-title {
   box-shadow: 0 2px 3px #0006;
   padding: 0.2em 0.5em;
   font-size: 14px;
+  color: #222222;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #222222;
+    color: seashell;
+  }
+
+  #feed-inputs input {
+    background: color-mix(in oklab, #222222 80%, floralwhite);
+  }
 }
 ",
       ),
