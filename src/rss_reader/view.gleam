@@ -104,7 +104,7 @@ div:has(.loader) {
   column-gap: 2em;
   scroll-snap-type: x mandatory;
   overflow-x: auto;
-  height: calc(100vh - 12rem);
+  height: calc(100svh - 12rem);
 }
 
 .feed-container {
