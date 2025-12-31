@@ -8,6 +8,7 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/element/keyed
+import rss_reader/icons
 
 pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
   html.html([], [
@@ -175,23 +176,18 @@ summary.item-title {
 }
 
 .sources {
-  margin-inline: 4rem;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem;
   border-bottom: 1px solid color-mix(in oklab, currentColor 20%, transparent);
 }
 
 @media (max-width: 600px) {
-  .sources {
-    margin-inline: 1rem;
-  }
-
   body {
     padding: 1rem 2rem;
   }
 }
 
 .sources form {
-  margin: 1em 0 0.5em;
+  margin: 1rem 0 0.5rem;
 }
 
 #feed-inputs {
@@ -201,13 +197,33 @@ summary.item-title {
   margin-bottom: 0.5em;
 }
 
+#feed-inputs > div {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
 #feed-inputs input {
   padding: 0.25em 1em 0.25em 0.5em;
   min-width: 200px;
   border-width: 0;
-  border-left: 4px solid coral;
+  border-left: 2px solid coral;
   background: floralwhite;
   text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 150px;
+}
+
+.sources button:has(svg) {
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+}
+
+.sources button svg {
+  width: 1em;
+  height: 1em;
 }
 
 .sources form input[type=\"submit\"], .sources button {
@@ -302,17 +318,23 @@ const feed_inputs_id = "feed-inputs"
 
 fn feed_inputs_view(initial_values: List(String)) -> element.Element(Nil) {
   html.details([attribute.class("sources")], [
-    html.summary([attribute.style("font-weight", "bold")], [
-      html.text("Sources"),
-    ]),
-    html.form([attribute.method("GET"), attribute.action("/")], [
-      html.div([attribute.id(feed_inputs_id)], {
-        use value <- list.map(initial_values)
-        html.input([attribute.name("feed-url[]"), attribute.value(value)])
-      }),
-      html.input([attribute.type_("submit"), attribute.value("Get feeds")]),
-      ..add_feed_button()
-    ]),
+    html.summary(
+      [attribute.styles([#("font-weight", "bold"), #("opacity", "0.6")])],
+      [
+        html.text("Sources"),
+      ],
+    ),
+    html.form([attribute.method("GET"), attribute.action("/")], {
+      source_inputs(initial_values)
+      |> list.append(add_feed_button())
+      |> list.append([
+        html.input([
+          attribute.type_("submit"),
+          attribute.value("Save"),
+          attribute.style("vertical-align", "bottom"),
+        ]),
+      ])
+    }),
   ])
 }
 
@@ -322,9 +344,10 @@ fn add_feed_button() {
       [
         attribute.attribute("onclick", "addFeedInput()"),
         attribute.type_("button"),
-        attribute.style("margin-left", "0.5em"),
+        attribute.style("margin-right", "0.5em"),
+        attribute.aria_label("Add Feed"),
       ],
-      [html.text("Add Feed")],
+      [icons.plus([])],
     ),
     html.script([], "
     function addFeedInput() {
@@ -348,5 +371,73 @@ fn add_feed_button() {
       minute: 'numeric',
     });
     "),
+  ]
+}
+
+fn source_inputs(feed_urls: List(String)) -> List(element.Element(_)) {
+  [
+    keyed.div([attribute.id(feed_inputs_id)], {
+      use url <- list.map(feed_urls)
+      #(
+        url,
+        html.div([], [
+          html.input([attribute.name("feed-url[]"), attribute.value(url)]),
+          html.button(
+            [
+              attribute.aria_label("Move up"),
+              attribute.type_("button"),
+              attribute.attribute("onclick", "moveFeedUp(event)"),
+            ],
+            [icons.chevron_up([])],
+          ),
+          html.button(
+            [
+              attribute.aria_label("Move down"),
+              attribute.type_("button"),
+
+              attribute.attribute("onclick", "moveFeedDown(event)"),
+            ],
+            [icons.chevron_down([])],
+          ),
+          html.button(
+            [
+              attribute.aria_label("Remove"),
+              attribute.type_("button"),
+              attribute.attribute("onclick", "removeFeed(event)"),
+            ],
+            [icons.trash_2([])],
+          ),
+        ]),
+      )
+    }),
+    html.script(
+      [],
+      "
+    function moveFeedUp(event) {
+      const button = event.currentTarget;
+      const div = button.parentElement;
+      const container = div.parentElement;
+      if (div.previousElementSibling) {
+        container.insertBefore(div, div.previousElementSibling);
+      }
+    }
+
+    function moveFeedDown(event) {
+      const button = event.currentTarget;
+      const div = button.parentElement;
+      const container = div.parentElement;
+      if (div.nextElementSibling) {
+        container.insertBefore(div.nextElementSibling, div);
+      }
+    }
+
+    function removeFeed(event) {
+      const button = event.currentTarget;
+      const div = button.parentElement;
+      const container = div.parentElement;
+      container.removeChild(div);
+    }
+    ",
+    ),
   ]
 }
