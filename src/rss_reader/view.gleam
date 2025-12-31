@@ -70,7 +70,7 @@ body {
   column-gap: 2em;
   scroll-snap-type: x mandatory;
   overflow-x: auto;
-  height: calc(100vh - 12rem);
+  height: calc(100vh - 11rem);
 }
 
 .feed-container {
@@ -95,13 +95,17 @@ body {
   gap: 0.5em;
   margin-top: 0;
   margin-bottom: 1.25em;
+  font-size: 1.4em;
+}
+
+.feed h2 a {
+  color: inherit;
 }
 
 .feed-items {
   display: flex;
   flex-direction: column;
   gap: 1.5em;
-  height: auto;
   overflow-y: auto;
   flex: 1;
 }
@@ -227,7 +231,9 @@ summary.item-title {
 pub fn feed_view(feed: glisse.RssDocument) -> element.Element(Nil) {
   html.div([attribute.class("feed")], [
     html.h2([], [
-      html.span([], [html.text(feed.channel.title)]),
+      html.a([attribute.href(feed.channel.link)], [
+        html.text(feed.channel.title),
+      ]),
       html.div([attribute.class("divider")], []),
     ]),
     html.div([attribute.class("feed-items")], {
