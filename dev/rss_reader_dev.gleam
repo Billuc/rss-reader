@@ -155,6 +155,7 @@ fn request_to_event(request: glen.Request) -> promise.Promise(dynamic.Dynamic) {
   use body <- promise.map(glen.read_text_body(request))
   let body = body |> result.unwrap("")
   let query_string = request.query |> option.unwrap("")
+
   dynamic.properties([
     #(dynamic.string("version"), dynamic.string("2.0")),
     #(dynamic.string("rawPath"), dynamic.string(request.path)),

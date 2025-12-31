@@ -71,17 +71,19 @@ a {
   color: coral;
 }
 
+div:has(.loader) {
+  text-align: center;
+}
+
 .loader {
-    width: 24px;
-    height: 24px;
-    border: 3px solid currentColor;
-    border-bottom-color: transparent;
-    border-radius: 50%;
-    display: inline-block;
-    box-sizing: border-box;
-    animation: rotation 1s linear infinite;
-    margin: 1em;
-    flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 3px solid currentColor;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
 }
 
 @keyframes rotation {
@@ -106,15 +108,15 @@ a {
 }
 
 .feed-container {
-  display:contents;
+  width: min(clamp(50%, 400px, 100%), 600px);
+  flex: 0 0 auto;
+  scroll-snap-align: center;
 }
 
 .feed {
-  width: min(clamp(50%, 400px, 100%), 600px);
-  scroll-snap-align: center;
+  width: 100%;
   height: 100%;
   box-sizing: border-box;
-  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
 }
@@ -297,7 +299,7 @@ summary.item-title {
               attribute.attribute("hx-target", "this"),
               attribute.class("feed-container"),
             ],
-            [html.span([attribute.class("loader")], [])],
+            [html.div([], [html.span([attribute.class("loader")], [])])],
           ),
         )
       }),
