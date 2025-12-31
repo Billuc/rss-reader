@@ -1,6 +1,8 @@
+import gleam/float
 import gleam/list
 import gleam/option
 import gleam/string
+import gleam/time/timestamp
 import glisse
 import lustre/attribute
 import lustre/element
@@ -37,6 +39,7 @@ body {
   background: antiquewhite;
   font-family: \"Georgia\", serif;
   margin: 0;
+  padding: 1rem 2rem;
 }
 
 .loader {
@@ -66,7 +69,7 @@ body {
   flex-flow: row nowrap;
   justify-content: space-around;
   align-items: flex-start;
-  margin-block: 1em;
+  margin-top: 1em;
   column-gap: 2em;
   scroll-snap-type: x mandatory;
   overflow-x: auto;
@@ -78,7 +81,6 @@ body {
 }
 
 .feed {
-  padding: 1em;
   width: min(clamp(50%, 400px, 100%), 600px);
   scroll-snap-align: center;
   height: 100%;
@@ -131,15 +133,18 @@ body {
   padding-left: 1em;
 }
 
-header {
-  display: flex;
-  align-items: baseline;
-  gap: 1em;
-  margin: 2em;
+header h1 {
+  margin: 0 0 0.25rem;
+  padding: 0.25rem;
+  border-block: 4px double black;
 }
 
-header h1 {
-  margin: 0;
+header h2 {
+  margin: 0.25rem 0;
+  padding: 0.5rem;
+  font-weight: normal;
+  font-size: 0.8rem;
+  border-bottom: 1px solid black;
 }
 
 .divider {
@@ -150,7 +155,7 @@ header h1 {
 summary.item-title {
   font-size: 0.9em;
   padding-left: 1em;
-  border-left: 4px solid coral;
+  border-left: 2px solid coral;
 }
 
 .sources {
@@ -198,11 +203,21 @@ summary.item-title {
     ]),
     html.body([], [
       html.header([], [
-        html.div([attribute.class("divider")], []),
         html.h1([attribute.style("text-align", "center")], [
           html.text("RSS Reader"),
         ]),
-        html.div([attribute.class("divider")], []),
+        html.h2(
+          [
+            attribute.style("text-align", "center"),
+            attribute.data(
+              "time",
+              timestamp.system_time()
+                |> timestamp.to_unix_seconds()
+                |> float.to_string(),
+            ),
+          ],
+          [],
+        ),
       ]),
       html.div([attribute.style("margin-inline", "1em")], {
         use error <- list.map(errors)
@@ -299,6 +314,18 @@ fn add_feed_button() {
         form.appendChild(input);
       }
     }
+
+    let h2Time = document.querySelector('h2[data-time]');
+    h2Time.innerText = new Date(
+      parseInt(h2Time.getAttribute('data-time')) * 1000
+    ).toLocaleString(navigator.language, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+      hour: 'numeric',
+      minute: 'numeric',
+    });
     "),
   ]
 }
