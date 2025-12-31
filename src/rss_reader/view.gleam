@@ -78,18 +78,14 @@ body {
 }
 
 .feed {
-  padding: 1em 2em;
-  border-right: 1px solid #aaa6;
-  width: clamp(30%, 400px, 100%);
-  scroll-snap-align: start;
-  overflow-y: auto;
+  padding: 1em;
+  width: min(clamp(50%, 400px, 100%), 600px);
+  scroll-snap-align: center;
   height: 100%;
   box-sizing: border-box;
   flex: 0 0 auto;
-}
-
-.feed:last-of-type {
-  border-right: none;
+  display: flex;
+  flex-direction: column;
 }
 
 .feed h2 {
@@ -105,7 +101,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5em;
+  height: auto;
   overflow-y: auto;
+  flex: 1;
 }
 
 .feed-items .feed-item:nth-child(even) {
