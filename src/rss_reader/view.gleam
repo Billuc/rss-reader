@@ -36,10 +36,10 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
         [],
         "
 body {
-  background: antiquewhite;
-  font-family: \"Georgia\", serif;
+  background: seashell;
+  font-family: serif;
   margin: 0;
-  padding: 1rem 2rem;
+  padding: 1rem 6rem;
 }
 
 .loader {
@@ -145,11 +145,7 @@ header h2 {
   font-weight: normal;
   font-size: 0.8rem;
   border-bottom: 1px solid black;
-}
-
-.divider {
-  border-bottom: 1px solid #aaa;
-  flex-grow: 1;
+  text-transform: uppercase;
 }
 
 summary.item-title {
@@ -166,6 +162,10 @@ summary.item-title {
 @media (max-width: 600px) {
   .sources {
     margin-inline: 1em;
+  }
+
+  body {
+    padding: 1rem 2rem;
   }
 }
 
