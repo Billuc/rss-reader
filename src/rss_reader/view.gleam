@@ -62,7 +62,7 @@ a {
 .loader {
     width: 24px;
     height: 24px;
-    border: 3px solid #000;
+    border: 3px solid currentColor;
     border-bottom-color: transparent;
     border-radius: 50%;
     display: inline-block;
@@ -118,7 +118,7 @@ a {
 }
 
 .feed h2 a {
-  color: inherit;
+  color: color-mix(in oklab, currentColor 75%, coral);
 }
 
 .feed-items {
@@ -157,14 +157,14 @@ header {
 header h1 {
   margin: 0 0 0.25rem;
   padding: 0.25rem;
-  border-block: 4px double black;
+  border-block: 4px double currentColor;
 }
 
 header h2 {
   margin: 0.25rem 0;
   padding: 0.5rem;
   font-size: 0.8rem;
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid currentColor;
   text-transform: uppercase;
 }
 
@@ -177,8 +177,9 @@ summary.item-title {
 .sources {
   margin-inline: 4rem;
   padding: 0.5rem 1rem;
-  border-bottom: 1px solid #0002;
+  border-bottom: 1px solid color-mix(in oklab, currentColor 20%, transparent);
 }
+
 @media (max-width: 600px) {
   .sources {
     margin-inline: 1rem;
