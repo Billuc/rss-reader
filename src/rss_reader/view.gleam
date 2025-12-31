@@ -36,9 +36,32 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
       html.style(
         [],
         "
+:root {
+  --bg-color: seashell;
+  --text-color: #222222;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #222222;
+    --text-color: seashell;
+  }
+}
+
+[data-theme=\"dark\"] {
+  --bg-color: #222222;
+  --text-color: seashell;
+}
+
+[data-theme=\"light\"] {
+  --bg-color: seashell;
+  --text-color: #222222;
+}
+
 body {
-  background: seashell;
-  color: #222222;
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
   font-family: serif;
   margin: 0;
   padding: 1rem 6rem;
@@ -196,7 +219,7 @@ summary.item-title {
   min-width: 200px;
   border-width: 0;
   border-left: 2px solid coral;
-  background: color-mix(in oklab, floralwhite 80%, #222222);
+  background: color-mix(in oklab, var(--bg-color) 80%, var(--text-color));
   color: currentColor;
   text-overflow: ellipsis;
   flex-shrink: 1;
@@ -226,15 +249,16 @@ summary.item-title {
   color: #222222;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #222222;
-    color: seashell;
-  }
-
-  #feed-inputs input {
-    background: color-mix(in oklab, #222222 80%, floralwhite);
-  }
+#theme-toggle {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: coral;
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  cursor: pointer;
 }
 ",
       ),
@@ -277,6 +301,7 @@ summary.item-title {
           ),
         )
       }),
+      ..theme_toggle_view()
     ]),
   ])
 }
@@ -438,6 +463,45 @@ fn source_inputs(feed_urls: List(String)) -> List(element.Element(_)) {
       const container = div.parentElement;
       container.removeChild(div);
     }
+    ",
+    ),
+  ]
+}
+
+fn theme_toggle_view() -> List(element.Element(Nil)) {
+  [
+    html.button(
+      [
+        attribute.id("theme-toggle"),
+        attribute.attribute("onclick", "toggleTheme()"),
+        attribute.aria_label("Toggle Theme"),
+      ],
+      [icons.sun_moon([])],
+    ),
+    html.script(
+      [],
+      "
+    function toggleTheme() {
+      const userPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      let newTheme;
+
+      if (!currentTheme) {
+        newTheme = userPrefersDark ? 'light' : 'dark';
+      } else {
+        newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      }
+
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      }
+    });
     ",
     ),
   ]
