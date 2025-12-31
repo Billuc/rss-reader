@@ -37,9 +37,26 @@ pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
         "
 body {
   background: seashell;
+  color: #222222;
   font-family: serif;
   margin: 0;
   padding: 1rem 6rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #222222;
+    color: seashell;
+  }
+
+  input {
+    background: #2e2e2e;
+    color: #e0e0e0;
+  }
+}
+
+a {
+  color: coral;
 }
 
 .loader {
@@ -73,7 +90,7 @@ body {
   column-gap: 2em;
   scroll-snap-type: x mandatory;
   overflow-x: auto;
-  height: calc(100vh - 11rem);
+  height: calc(100vh - 12rem);
 }
 
 .feed-container {
@@ -129,8 +146,12 @@ body {
 
 .item-description {
   font-size: smaller;
-  opacity: 0.7;
+  opacity: 0.8;
   padding-left: 1em;
+}
+
+header {
+  font-family: \"Verdana\", sans-serif;
 }
 
 header h1 {
@@ -142,7 +163,6 @@ header h1 {
 header h2 {
   margin: 0.25rem 0;
   padding: 0.5rem;
-  font-weight: normal;
   font-size: 0.8rem;
   border-bottom: 1px solid black;
   text-transform: uppercase;
@@ -155,13 +175,13 @@ summary.item-title {
 }
 
 .sources {
-  margin-inline: 4em;
-  padding: 0.5em 1em;
-  border-block: 1px solid #0002;
+  margin-inline: 4rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #0002;
 }
 @media (max-width: 600px) {
   .sources {
-    margin-inline: 1em;
+    margin-inline: 1rem;
   }
 
   body {
@@ -261,7 +281,7 @@ pub fn feed_view(feed: glisse.RssDocument) -> element.Element(Nil) {
           html.text(item.title |> option.unwrap("Untitled")),
         ]),
         html.p([attribute.class("item-description")], [
-          html.text(description),
+          html.text(description <> " "),
           html.a(
             option.map(item.link, fn(l) { [attribute.href(l)] })
               |> option.unwrap([]),
