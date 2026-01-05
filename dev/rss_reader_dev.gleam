@@ -4,12 +4,15 @@ import gleam/bit_array
 import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
+import gleam/float
 import gleam/http
 import gleam/io
 import gleam/javascript/promise
 import gleam/list
 import gleam/option
 import gleam/result
+import gleam/string
+import gleam/time/timestamp
 import gleam/uri
 import glen
 import rss_reader
@@ -132,8 +135,9 @@ fn graceful_shutdown(ctx: DevContext) -> promise.Promise(DevContext) {
 }
 
 fn run_dev_server() {
+  let start_time = timestamp.system_time() |> timestamp.to_unix_seconds()
   node.console_log("Starting development server on http://localhost:1212")
-  glen.serve(1212, glen_handler)
+  glen.serve(1212, glen_handler(start_time, _))
 }
 
 fn start_server() -> Result(ChildProcess, String) {
@@ -145,10 +149,21 @@ fn start_server() -> Result(ChildProcess, String) {
   |> deno_spawn()
 }
 
-fn glen_handler(request: glen.Request) -> promise.Promise(glen.Response) {
-  request_to_event(request)
-  |> promise.await(rss_reader.handler)
-  |> promise.map(response_to_glen)
+fn glen_handler(
+  start_time: Float,
+  request: glen.Request,
+) -> promise.Promise(glen.Response) {
+  case glen.path_segments(request) {
+    ["last-updated"] ->
+      glen.response(200)
+      |> glen.set_body(glen.Text(float.to_string(start_time)))
+      |> promise.resolve()
+    _ -> {
+      request_to_event(request)
+      |> promise.await(rss_reader.handler)
+      |> promise.map(response_to_glen)
+    }
+  }
 }
 
 fn request_to_event(request: glen.Request) -> promise.Promise(dynamic.Dynamic) {
@@ -250,7 +265,33 @@ fn make_glen_body(
 ) -> Result(glen.ResponseBody, Nil) {
   case is_base64_encoded {
     True -> bit_array.base64_decode(body) |> result.map(glen.Bits)
-    False -> Ok(glen.Text(body))
+    False ->
+      case string.split_once(body, "</head>") {
+        Error(_) -> Ok(glen.Text(body))
+        Ok(#(before, after)) -> {
+          let injected = before <> "<script>
+            let serverStartTime = undefined;
+
+            setInterval(() => {
+              fetch('/last-updated')
+                .then(response => response.text())
+                .then((data) => {
+                  if (!serverStartTime) {
+                    serverStartTime = parseFloat(data);
+                  } else {
+                    const newStartTime = parseFloat(data);
+                    if (newStartTime !== serverStartTime) {
+                      console.log('Changes detected on server. Reloading page...');
+                      window.location.reload();
+                    }
+                  }
+                });
+            }, 1000);
+            </script>" <> "</head>" <> after
+
+          Ok(glen.Text(injected))
+        }
+      }
   }
 }
 
