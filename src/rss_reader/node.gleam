@@ -3,9 +3,3 @@ pub fn console_log(msg: a) -> Nil
 
 @external(javascript, "../node_ffi.js", "consoleError")
 pub fn console_error(msg: String) -> Nil
-
-@external(javascript, "../node_ffi.js", "readFileSync")
-pub fn read_file_sync(path: String) -> Result(String, String)
-
-@external(javascript, "../node_ffi.js", "readBase64FileSync")
-pub fn read_base64_file_sync(path: String) -> Result(String, String)

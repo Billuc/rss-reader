@@ -1,0 +1,228 @@
+:root {
+  --bg-color: seashell;
+  --text-color: #222222;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #222222;
+    --text-color: seashell;
+  }
+}
+
+[data-theme=\"dark\"] {
+  --bg-color: #222222;
+  --text-color: seashell;
+}
+
+[data-theme=\"light\"] {
+  --bg-color: seashell;
+  --text-color: #222222;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
+  font-family: serif;
+  margin: 0;
+  padding: 1rem 6rem;
+}
+
+a {
+  color: coral;
+}
+
+div:has(.loader) {
+  text-align: center;
+}
+
+.loader {
+  width: 24px;
+  height: 24px;
+  border: 3px solid currentColor;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.feeds {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-around;
+  align-items: flex-start;
+  margin-top: 1em;
+  column-gap: 2em;
+  scroll-snap-type: x mandatory;
+  overflow-x: auto;
+  height: calc(100svh - 12rem);
+}
+
+.feed-container {
+  width: min(clamp(50%, 400px, 100%), 600px);
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  height: 100%;
+}
+
+.feed {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.feed h2 {
+  text-transform: uppercase;
+  display: flex;
+  align-items: end;
+  gap: 0.5em;
+  margin-top: 0;
+  margin-bottom: 1.25em;
+  font-size: 1.4em;
+}
+
+.feed h2 a {
+  color: color-mix(in oklab, currentColor 75%, coral);
+}
+
+.feed-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.feed-items .feed-item:nth-child(even) {
+  align-self: flex-end;
+}
+.feed-items .feed-item:nth-child(odd) {
+  align-self: flex-start;
+}
+.feed-items .feed-item {
+  width: 90%;
+}
+
+.feed-items .feed-item:first-of-type .item-title {
+  font-size: 1.2em;
+  width: 100%;
+}
+
+.item-description {
+  font-size: smaller;
+  opacity: 0.8;
+  padding-left: 1em;
+  word-break: break-word;
+}
+
+header {
+  font-family: \"Verdana\", sans-serif;
+}
+
+header h1 {
+  margin: 0 0 0.25rem;
+  padding: 0.25rem;
+  border-block: 4px double currentColor;
+}
+
+header h2 {
+  margin: 0.25rem 0;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  border-bottom: 1px solid currentColor;
+  text-transform: uppercase;
+}
+
+summary.item-title {
+  font-size: 0.9em;
+  padding-left: 1em;
+  border-left: 2px solid coral;
+}
+
+.sources {
+  padding: 0.5rem;
+  border-bottom: 1px solid color-mix(in oklab, currentColor 20%, transparent);
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 1rem 2rem;
+  }
+}
+
+.sources form {
+  margin: 1rem 0 0.5rem;
+}
+
+#feed-inputs {
+  display:flex;
+  flex-wrap: wrap;
+  gap: 0.25em 0.5em;
+  margin-bottom: 0.5em;
+}
+
+#feed-inputs > div {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+#feed-inputs input {
+  padding: 0.25em 1em 0.25em 0.5em;
+  min-width: 200px;
+  border-width: 0;
+  border-left: 2px solid coral;
+  background: color-mix(in oklab, var(--bg-color) 80%, var(--text-color));
+  color: currentColor;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 150px;
+}
+
+.sources button:has(svg) {
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+}
+
+.sources button svg {
+  width: 1em;
+  height: 1em;
+}
+
+.sources form input[type=\"submit\"], .sources button {
+  border: 0;
+  border-radius: 0.5em;
+  background: coral;
+  cursor: pointer;
+  box-shadow: 0 2px 3px #0006;
+  padding: 0.2em 0.5em;
+  font-size: 14px;
+  color: #222222;
+}
+
+#theme-toggle {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: coral;
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  cursor: pointer;
+}

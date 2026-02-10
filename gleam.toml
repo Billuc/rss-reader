@@ -21,19 +21,19 @@ lustre = ">= 5.3.4 and < 6.0.0"
 gleam_fetch = ">= 1.3.0 and < 2.0.0"
 gleam_javascript = ">= 1.0.0 and < 2.0.0"
 gleam_time = ">= 1.6.0 and < 2.0.0"
+glen = ">= 2.2.3 and < 3.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
-esgleam = ">= 0.8.0 and < 1.0.0"
+esgleam = ">= 1.0.0 and < 2.0.0"
 argv = ">= 1.0.2 and < 2.0.0"
-glen = ">= 2.2.3 and < 3.0.0"
 lucide_lustre = ">= 2.0.3 and < 3.0.0"
 
 [javascript]
 runtime = "deno"
 
 [javascript.deno]
-allow_all = true # I don't care about permissions right now, this is only for the dev server
+allow_all = true
 
 [lucide_lustre]
 output_module = "rss_reader/icons"

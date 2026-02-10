@@ -1,85 +1,69 @@
 import gleam/dict
-import gleam/dynamic
 import gleam/fetch
+import gleam/http
 import gleam/http/request
+import gleam/int
 import gleam/javascript/promise
 import gleam/list
 import gleam/result
 import gleam/string
+import glen
 import glisse
 import lustre/element
-import rss_reader/aws
 import rss_reader/node
 import rss_reader/utils
 import rss_reader/view
 
-pub fn handler(event: dynamic.Dynamic) -> promise.Promise(dynamic.Dynamic) {
-  let favicon = node.read_base64_file_sync("./favicon.ico") |> result.unwrap("")
+pub fn main() {
+  glen.serve(3002, handler)
+}
 
-  node.console_log("Received event: " <> string.inspect(event))
-  let ev = aws.decode_event(event)
+pub fn handler(req: glen.Request) -> promise.Promise(glen.Response) {
+  node.console_log(
+    "RECV " <> req.method |> http.method_to_string() <> " " <> req.path,
+  )
 
-  let res = case ev {
-    Error(e) -> {
-      node.console_error(e)
+  use <- glen.static(req, "/static", "./dist/static")
 
-      view.view([], [e])
+  let res = case req.path {
+    "/" -> {
+      let urls =
+        req
+        |> utils.query_dict
+        |> dict.get("feed-url[]")
+        |> result.unwrap("")
+        |> string.split(",")
+        |> list.filter(fn(s) { string.trim(s) != "" })
+
+      view.view(urls, [])
       |> element.to_document_string()
-      |> aws.html_response()
-      |> aws.return()
+      |> glen.html(200)
       |> promise.resolve()
     }
-    Ok(ev) -> {
-      case ev.request_context.http.path {
-        "/" -> {
-          let urls =
-            ev.query_string_parameters
-            |> dict.get("feed-url[]")
-            |> result.unwrap("")
-            |> string.split(",")
-            |> list.filter(fn(s) { string.trim(s) != "" })
+    "/items" -> {
+      let url =
+        req
+        |> utils.query_dict()
+        |> dict.get("feed-url")
+        |> result.unwrap("")
 
-          view.view(urls, [])
-          |> element.to_document_string()
-          |> aws.html_response()
-          |> aws.return()
-          |> promise.resolve()
-        }
-        "/items" -> {
-          let url =
-            ev.query_string_parameters
-            |> dict.get("feed-url")
-            |> result.unwrap("")
+      use res <- promise.map(
+        fetch_feed(url)
+        |> utils.await_with_timeout(3000, "Timeout fetching URL: " <> url),
+      )
 
-          use res <- promise.map(
-            fetch_feed(url)
-            |> utils.await_with_timeout(3000, "Timeout fetching URL: " <> url),
-          )
-
-          case res {
-            Ok(feed) -> view.feed_view(feed)
-            Error(e) -> view.error_view(e)
-          }
-          |> element.to_string()
-          |> aws.html_response()
-          |> aws.return()
-        }
-        "/favicon.ico" -> {
-          aws.binary_response(favicon, "image/x-icon")
-          |> aws.return()
-          |> promise.resolve()
-        }
-        _ ->
-          aws.html_response("Not found")
-          |> aws.status_code(404)
-          |> aws.return()
-          |> promise.resolve()
+      case res {
+        Ok(feed) -> view.feed_view(feed)
+        Error(e) -> view.error_view(e)
       }
+      |> element.to_string()
+      |> glen.html(200)
     }
+    _ -> glen.text("Not found", 404) |> promise.resolve()
   }
 
   promise.tap(res, fn(res) {
-    node.console_log("Returning response: " <> string.inspect(res))
+    node.console_log("SENT " <> int.to_string(res.status) <> " " <> req.path)
   })
   res
 }
