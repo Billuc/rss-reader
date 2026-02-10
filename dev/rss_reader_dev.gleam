@@ -14,24 +14,28 @@ pub fn main() {
   let args = argv.load()
 
   case args.arguments {
-    ["build"] -> build()
+    ["bundle"] -> bundle()
     ["_run"] -> run_dev_server()
     ["run"] -> watcher.start_watcher(dev_server_command())
-    _ -> io.println("Usage: gleam dev [build|run]")
+    _ -> io.println("Usage: gleam dev [bundle|run]")
   }
 }
 
-fn build() {
+fn bundle() {
   let bundle_res =
     esgleam.new(outdir: "./dist")
     |> esgleam.entry("rss_reader.gleam")
     |> esgleam.platform(esgleam.Node)
     |> esgleam.minify(True)
+    |> esgleam.kind(esgleam.Script)
     |> esgleam.bundle()
 
   case bundle_res {
     Ok(_) -> io.println("Build succeeded")
-    Error(_) -> io.println_error("Build failed")
+    Error(err) -> {
+      io.println_error("Build failed")
+      io.println_error(err)
+    }
   }
 }
 

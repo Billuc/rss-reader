@@ -3,3 +3,5 @@
 /build
 erl_crash.dump
 /node_modules
+/dist/rss_reader.js
+/dist/rss_reader.mjs
