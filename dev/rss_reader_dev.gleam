@@ -54,7 +54,7 @@ fn run_dev_server() {
   glen.serve(1212, fn(req) {
     use <- handle_last_updated(req, start_time)
     use <- with_dev_script()
-    rss_reader.handler(req)
+    rss_reader.handler(req, "")
   })
 }
 

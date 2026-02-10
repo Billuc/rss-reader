@@ -1,3 +1,4 @@
+import envoy
 import gleam/dict
 import gleam/fetch
 import gleam/http
@@ -15,17 +16,26 @@ import rss_reader/utils
 import rss_reader/view
 
 pub fn main() {
-  glen.serve(3002, handler)
-}
+  let port =
+    envoy.get("GLEN_PORT") |> result.try(int.parse) |> result.unwrap(3002)
+  let base = envoy.get("GLEN_BASE") |> result.unwrap("/") |> sanitize_base
 
-pub fn handler(req: glen.Request) -> promise.Promise(glen.Response) {
   node.console_log(
-    "RECV " <> req.method |> http.method_to_string() <> " " <> req.path,
+    "Starting server on port " <> int.to_string(port) <> " with base " <> base,
   )
 
+  glen.serve(port, fn(req) { handler(req, base) })
+}
+
+pub fn handler(
+  req: glen.Request,
+  base: String,
+) -> promise.Promise(glen.Response) {
+  use <- log_request(req)
+  use req <- check_base(req, base)
   use <- glen.static(req, "/static", "./dist/static")
 
-  let res = case req.path {
+  case req.path {
     "/" -> {
       let urls =
         req
@@ -35,7 +45,7 @@ pub fn handler(req: glen.Request) -> promise.Promise(glen.Response) {
         |> string.split(",")
         |> list.filter(fn(s) { string.trim(s) != "" })
 
-      view.view(urls, [])
+      view.view(base, urls, [])
       |> element.to_document_string()
       |> glen.html(200)
       |> promise.resolve()
@@ -61,11 +71,44 @@ pub fn handler(req: glen.Request) -> promise.Promise(glen.Response) {
     }
     _ -> glen.text("Not found", 404) |> promise.resolve()
   }
+}
 
-  promise.tap(res, fn(res) {
-    node.console_log("SENT " <> int.to_string(res.status) <> " " <> req.path)
-  })
+fn sanitize_base(base: String) -> String {
+  case string.ends_with(base, "/") {
+    True -> string.drop_end(base, 1)
+    False -> base
+  }
+}
+
+fn log_request(
+  req: glen.Request,
+  next: fn() -> promise.Promise(glen.Response),
+) -> promise.Promise(glen.Response) {
+  node.console_log(
+    "RECV " <> req.method |> http.method_to_string() <> " " <> req.path,
+  )
+
+  use res <- promise.map(next())
+
+  node.console_log("SENT " <> int.to_string(res.status) <> " " <> req.path)
   res
+}
+
+fn check_base(
+  req: glen.Request,
+  base: String,
+  next: fn(glen.Request) -> promise.Promise(glen.Response),
+) -> promise.Promise(glen.Response) {
+  case string.starts_with(req.path, base) {
+    True -> {
+      let new_path = case string.drop_start(req.path, string.length(base)) {
+        "" -> "/"
+        p -> p
+      }
+      next(request.Request(..req, path: new_path))
+    }
+    False -> glen.text("Not found", 404) |> promise.resolve()
+  }
 }
 
 fn fetch_feed(

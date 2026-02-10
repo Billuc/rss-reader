@@ -10,10 +10,14 @@ import lustre/element/html
 import lustre/element/keyed
 import rss_reader/icons
 
-pub fn view(urls: List(String), errors: List(String)) -> element.Element(Nil) {
+pub fn view(
+  base: String,
+  urls: List(String),
+  errors: List(String),
+) -> element.Element(Nil) {
   html.html([], [
     html.head([], [
-      html.base([attribute.href("/")]),
+      html.base([attribute.href(base <> "/")]),
       html.meta([attribute.charset("UTF-8")]),
       html.meta([
         attribute.name("viewport"),
