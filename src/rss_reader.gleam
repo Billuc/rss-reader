@@ -86,12 +86,18 @@ fn log_request(
 ) -> promise.Promise(glen.Response) {
   let uuid = node.uuid()
   node.console_log(
-    uuid <> " - RECV " <> req.method |> http.method_to_string() <> " " <> req.path,
+    uuid
+    <> " - RECV "
+    <> req.method |> http.method_to_string()
+    <> " "
+    <> req.path,
   )
 
   use res <- promise.map(next())
 
-  node.console_log(uuid <> " - SENT " <> int.to_string(res.status) <> " " <> req.path)
+  node.console_log(
+    uuid <> " - SENT " <> int.to_string(res.status) <> " " <> req.path,
+  )
   res
 }
 

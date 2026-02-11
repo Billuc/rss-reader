@@ -1,4 +1,5 @@
 import gleam/float
+import gleam/int
 import gleam/list
 import gleam/option
 import gleam/string
@@ -29,21 +30,21 @@ pub fn view(
         attribute.href("./static/favicon.ico"),
       ]),
       html.title([], "RSS Reader"),
-      html.script(
-        [
-          attribute.src(
-            "https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js",
-          ),
-          attribute.crossorigin("anonymous"),
-        ],
-        "",
-      ),
       html.link([
         attribute.rel("stylesheet"),
         attribute.href("./static/styles.css"),
       ]),
+      html.script([attribute.src("./static/rss_reader.js")], "")
     ]),
     html.body([], [
+      html.iframe([
+        attribute.hidden(True),
+        attribute.name("htmz"),
+        attribute.attribute(
+          "onload",
+ "setTimeout(()=>document.querySelector(contentWindow.location.hash||null)?.replaceWith(...contentDocument.body.childNodes))",
+        ),
+      ]),
       html.header([], [
         html.h1([attribute.style("text-align", "center")], [
           html.text("RSS Reader"),
@@ -67,17 +68,21 @@ pub fn view(
       }),
       feed_inputs_view(urls),
       keyed.div([attribute.class("feeds")], {
-        use url <- list.map(urls)
+        use url, i <- list.index_map(urls)
+        let id = "item" <> int.to_string(i)
         #(
           url,
-          html.div(
+          html.form(
             [
-              attribute.attribute("hx-get", "./items?feed-url=" <> url),
-              attribute.attribute("hx-trigger", "load"),
-              attribute.attribute("hx-target", "this"),
+              attribute.id(id),
+              attribute.target("htmz"),
+              attribute.action("./items#" <> id),
               attribute.class("feed-container"),
             ],
-            [html.div([], [html.span([attribute.class("loader")], [])])],
+            [
+                html.input([attribute.type_("hidden"), attribute.name("feed-url"), attribute.value(url)]),
+                html.div([], [html.span([attribute.class("loader")], [])])
+            ],
           ),
         )
       }),
