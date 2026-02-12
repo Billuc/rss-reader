@@ -44,7 +44,7 @@ fn dev_server_command() -> List(String) {
 
   // TODO: make cleaner
   // Did it that way because gleam dev run doesn't catch signals :/
-  [args.runtime, "--allow-all", args.program, "_run"]
+  [args.runtime, "--allow-all", "--watch=dist", args.program, "_run"]
 }
 
 fn run_dev_server() {
