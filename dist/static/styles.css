@@ -106,6 +106,7 @@ div:has(.loader) {
   gap: 1.5em;
   overflow-y: auto;
   flex: 1;
+  padding-bottom: 1em;
 }
 
 .feed-items .feed-item:nth-child(even) {
