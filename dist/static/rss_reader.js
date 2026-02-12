@@ -57,13 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const feedForms = document.getElementsByClassName("feed-container");
-    for (const form of feedForms) {
-        form.submit();
-    }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
     let h2Time = document.querySelector("h2[data-time]");
     h2Time.innerText = new Date(
         parseInt(h2Time.getAttribute("data-time")) * 1000,

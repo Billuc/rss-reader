@@ -32,6 +32,15 @@ pub fn view(
         attribute.href("./static/favicon.ico"),
       ]),
       html.title([], "RSS Reader"),
+      html.script(
+        [
+          attribute.src(
+            "https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js",
+          ),
+          attribute.crossorigin("anonymous"),
+        ],
+        "",
+      ),
       html.link([
         attribute.rel("stylesheet"),
         attribute.href("./static/styles.css"),
@@ -39,14 +48,6 @@ pub fn view(
       html.script([attribute.src("./static/rss_reader.js")], ""),
     ]),
     html.body([], [
-      html.iframe([
-        attribute.hidden(True),
-        attribute.name("htmz"),
-        attribute.attribute(
-          "onload",
-          "setTimeout(()=>document.querySelector(contentWindow.location.hash||null)?.replaceWith(...contentDocument.body.childNodes))",
-        ),
-      ]),
       html.header([], [
         html.h1([attribute.style("text-align", "center")], [
           html.text("RSS Reader"),
@@ -73,23 +74,10 @@ pub fn view(
         use url, i <- list.index_map(urls)
         let id = "item" <> int.to_string(i)
         #(
-          url,
-          html.form(
-            [
-              attribute.id(id),
-              attribute.target("htmz"),
-              attribute.action("./items#" <> id),
-              attribute.class("feed-container"),
-            ],
-            [
-              html.input([
-                attribute.type_("hidden"),
-                attribute.name("feed-url"),
-                attribute.value(url),
-              ]),
-              html.div([], [html.span([attribute.class("loader")], [])]),
-            ],
-          ),
+          id,
+          feed_loader(url, "load", [
+            html.div([], [html.span([attribute.class("loader")], [])]),
+          ]),
         )
       }),
       theme_toggle_button(),
@@ -97,33 +85,59 @@ pub fn view(
   ])
 }
 
-pub fn feed_view(feed: glisse.RssDocument) -> element.Element(Nil) {
-  html.div([attribute.class("feed")], [
-    html.h2([], [
-      html.a([attribute.href(feed.channel.link)], [
-        html.text(feed.channel.title),
-      ]),
-      html.div([attribute.class("divider")], []),
-    ]),
-    html.div([attribute.class("feed-items")], {
-      use item <- list.map(feed.channel.items)
-      let description =
-        item.description |> option.unwrap("") |> string.replace("\"", "")
+fn feed_loader(
+  url: String,
+  trigger: String,
+  children: List(element.Element(Nil)),
+) -> element.Element(Nil) {
+  html.div(
+    [
+      attribute.attribute("hx-get", "./items?feed-url=" <> url),
+      attribute.attribute("hx-trigger", trigger),
+      attribute.attribute("hx-target", "this"),
+      attribute.attribute("hx-swap", "outerHTML"),
+      attribute.class("feed-container"),
+    ],
+    children,
+  )
+}
 
-      html.details([attribute.class("feed-item")], [
-        html.summary([attribute.class("item-title")], [
-          html.text(item.title |> option.unwrap("Untitled")),
+pub fn feed_view(url: String, feed: glisse.RssDocument) -> element.Element(Nil) {
+  feed_loader(url, "click from:find .reload", [
+    html.div([attribute.class("feed")], [
+      html.h2([], [
+        html.a([attribute.href(feed.channel.link)], [
+          html.text(feed.channel.title),
         ]),
-        html.p([attribute.class("item-description")], [
-          html.text(description <> " "),
-          html.a(
-            option.map(item.link, fn(l) { [attribute.href(l)] })
-              |> option.unwrap([]),
-            [html.text("Read more")],
-          ),
-        ]),
-      ])
-    }),
+        html.button(
+          [
+            attribute.aria_label("Reload"),
+            attribute.type_("submit"),
+            attribute.class("reload"),
+          ],
+          [icons.rotate_cw([])],
+        ),
+      ]),
+      html.div([attribute.class("feed-items")], {
+        use item <- list.map(feed.channel.items)
+        let description =
+          item.description |> option.unwrap("") |> string.replace("\"", "")
+
+        html.details([attribute.class("feed-item")], [
+          html.summary([attribute.class("item-title")], [
+            html.text(item.title |> option.unwrap("Untitled")),
+          ]),
+          html.p([attribute.class("item-description")], [
+            html.text(description <> " "),
+            html.a(
+              option.map(item.link, fn(l) { [attribute.href(l)] })
+                |> option.unwrap([]),
+              [html.text("Read more")],
+            ),
+          ]),
+        ])
+      }),
+    ]),
   ])
 }
 
@@ -207,6 +221,10 @@ fn theme_toggle_button() -> element.Element(Nil) {
       attribute.attribute("onclick", "toggleTheme()"),
       attribute.aria_label("Toggle Theme"),
     ],
-    [icons.sun_moon([])],
+    [
+      icons.sun_moon([
+        attribute.styles([#("width", "1.5em"), #("height", "1.5em")]),
+      ]),
+    ],
   )
 }

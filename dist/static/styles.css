@@ -88,9 +88,6 @@ div:has(.loader) {
 
 .feed h2 {
   text-transform: uppercase;
-  display: flex;
-  align-items: end;
-  gap: 0.5em;
   margin-top: 0;
   margin-bottom: 1.25em;
   font-size: 1.4em;
@@ -98,6 +95,11 @@ div:has(.loader) {
 
 .feed h2 a {
   color: color-mix(in oklab, currentColor 75%, coral);
+}
+
+.feed h2 .reload {
+  display: inline-block;
+  margin-left: 0.5em;
 }
 
 .feed-items {
@@ -196,20 +198,20 @@ summary.item-title {
   min-width: 150px;
 }
 
-.sources button:has(svg) {
+button:has(svg) {
   font-size: 16px;
   width: 24px;
   height: 24px;
   padding: 4px;
 }
 
-.sources button svg {
+button svg {
   width: 1em;
   height: 1em;
 }
 
-.sources form input[type="submit"],
-.sources button {
+form input[type="submit"],
+button {
   border: 0;
   border-radius: 0.5em;
   background: coral;

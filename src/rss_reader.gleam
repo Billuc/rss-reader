@@ -63,7 +63,7 @@ pub fn handler(
       )
 
       case res {
-        Ok(feed) -> view.feed_view(feed)
+        Ok(feed) -> view.feed_view(url, feed)
         Error(e) -> view.error_view(e)
       }
       |> element.to_string()
