@@ -10,12 +10,12 @@
   }
 }
 
-[data-theme=\"dark\"] {
+[data-theme="dark"] {
   --bg-color: #222222;
   --text-color: seashell;
 }
 
-[data-theme=\"light\"] {
+[data-theme="light"] {
   --bg-color: seashell;
   --text-color: #222222;
 }
@@ -23,7 +23,9 @@
 body {
   background: var(--bg-color);
   color: var(--text-color);
-  transition: background 0.3s, color 0.3s;
+  transition:
+    background 0.3s,
+    color 0.3s;
   font-family: serif;
   margin: 0;
   padding: 1rem 6rem;
@@ -49,12 +51,12 @@ div:has(.loader) {
 }
 
 @keyframes rotation {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .feeds {
@@ -129,7 +131,7 @@ div:has(.loader) {
 }
 
 header {
-  font-family: \"Verdana\", sans-serif;
+  font-family: "Verdana", sans-serif;
 }
 
 header h1 {
@@ -205,7 +207,8 @@ summary.item-title {
   height: 1em;
 }
 
-.sources form input[type="submit"], .sources button {
+.sources form input[type="submit"],
+.sources button {
   border: 0;
   border-radius: 0.5em;
   background: coral;
