@@ -80,6 +80,13 @@ pub fn view(
           ]),
         )
       }),
+      html.footer([], [
+        html.text("Developed by "),
+        html.a([attribute.href("https://billuc.github.io")], [
+          html.text("Luc Billaud"),
+        ]),
+        html.text(" using Gleam, Lustre, Glen and Deno"),
+      ]),
       theme_toggle_button(),
     ]),
   ])
