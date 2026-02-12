@@ -11,6 +11,8 @@ import lustre/element/html
 import lustre/element/keyed
 import rss_reader/icons
 
+const feed_inputs_id = "feed-inputs"
+
 pub fn view(
   base: String,
   urls: List(String),
@@ -34,7 +36,7 @@ pub fn view(
         attribute.rel("stylesheet"),
         attribute.href("./static/styles.css"),
       ]),
-      html.script([attribute.src("./static/rss_reader.js")], "")
+      html.script([attribute.src("./static/rss_reader.js")], ""),
     ]),
     html.body([], [
       html.iframe([
@@ -42,7 +44,7 @@ pub fn view(
         attribute.name("htmz"),
         attribute.attribute(
           "onload",
- "setTimeout(()=>document.querySelector(contentWindow.location.hash||null)?.replaceWith(...contentDocument.body.childNodes))",
+          "setTimeout(()=>document.querySelector(contentWindow.location.hash||null)?.replaceWith(...contentDocument.body.childNodes))",
         ),
       ]),
       html.header([], [
@@ -80,13 +82,17 @@ pub fn view(
               attribute.class("feed-container"),
             ],
             [
-                html.input([attribute.type_("hidden"), attribute.name("feed-url"), attribute.value(url)]),
-                html.div([], [html.span([attribute.class("loader")], [])])
+              html.input([
+                attribute.type_("hidden"),
+                attribute.name("feed-url"),
+                attribute.value(url),
+              ]),
+              html.div([], [html.span([attribute.class("loader")], [])]),
             ],
           ),
         )
       }),
-      ..theme_toggle_view()
+      theme_toggle_button(),
     ]),
   ])
 }
@@ -125,169 +131,82 @@ pub fn error_view(error: String) -> element.Element(Nil) {
   html.p([attribute.style("color", "red")], [html.text(error)])
 }
 
-const feed_inputs_id = "feed-inputs"
-
 fn feed_inputs_view(initial_values: List(String)) -> element.Element(Nil) {
   html.details([attribute.class("sources")], [
     html.summary(
       [attribute.styles([#("font-weight", "bold"), #("opacity", "0.6")])],
-      [
-        html.text("Sources"),
-      ],
+      [html.text("Sources")],
     ),
     html.form([attribute.method("GET"), attribute.action("/")], {
-      source_inputs(initial_values)
-      |> list.append(add_feed_button())
-      |> list.append([
+      [
+        source_inputs(initial_values),
+        add_feed_button(),
         html.input([
           attribute.type_("submit"),
           attribute.value("Save"),
           attribute.style("vertical-align", "bottom"),
         ]),
-      ])
+      ]
     }),
   ])
 }
 
 fn add_feed_button() {
-  [
-    html.button(
-      [
-        attribute.attribute("onclick", "addFeedInput()"),
-        attribute.type_("button"),
-        attribute.style("margin-right", "0.5em"),
-        attribute.aria_label("Add Feed"),
-      ],
-      [icons.plus([])],
-    ),
-    html.script([], "
-    function addFeedInput() {
-      const form = document.getElementById('" <> feed_inputs_id <> "');
-      if (form) {
-        const input = document.createElement('input');
-        input.name = 'feed-url[]';
-        form.appendChild(input);
-      }
-    }
-
-    let h2Time = document.querySelector('h2[data-time]');
-    h2Time.innerText = new Date(
-      parseInt(h2Time.getAttribute('data-time')) * 1000
-    ).toLocaleString(navigator.language, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long',
-      hour: 'numeric',
-      minute: 'numeric',
-    });
-    "),
-  ]
+  html.button(
+    [
+      attribute.attribute("onclick", "addFeedInput('" <> feed_inputs_id <> "')"),
+      attribute.type_("button"),
+      attribute.style("margin-right", "0.5em"),
+      attribute.aria_label("Add Feed"),
+    ],
+    [icons.plus([])],
+  )
 }
 
-fn source_inputs(feed_urls: List(String)) -> List(element.Element(_)) {
-  [
-    keyed.div([attribute.id(feed_inputs_id)], {
-      use url <- list.map(feed_urls)
-      #(
-        url,
-        html.div([], [
-          html.input([attribute.name("feed-url[]"), attribute.value(url)]),
-          html.button(
-            [
-              attribute.aria_label("Move up"),
-              attribute.type_("button"),
-              attribute.attribute("onclick", "moveFeedUp(event)"),
-            ],
-            [icons.chevron_up([])],
-          ),
-          html.button(
-            [
-              attribute.aria_label("Move down"),
-              attribute.type_("button"),
+fn source_inputs(feed_urls: List(String)) -> element.Element(_) {
+  keyed.div([attribute.id(feed_inputs_id)], {
+    use url <- list.map(feed_urls)
+    #(
+      url,
+      html.div([], [
+        html.input([attribute.name("feed-url[]"), attribute.value(url)]),
+        html.button(
+          [
+            attribute.aria_label("Move up"),
+            attribute.type_("button"),
+            attribute.attribute("onclick", "moveFeedUp(event)"),
+          ],
+          [icons.chevron_up([])],
+        ),
+        html.button(
+          [
+            attribute.aria_label("Move down"),
+            attribute.type_("button"),
 
-              attribute.attribute("onclick", "moveFeedDown(event)"),
-            ],
-            [icons.chevron_down([])],
-          ),
-          html.button(
-            [
-              attribute.aria_label("Remove"),
-              attribute.type_("button"),
-              attribute.attribute("onclick", "removeFeed(event)"),
-            ],
-            [icons.trash_2([])],
-          ),
-        ]),
-      )
-    }),
-    html.script(
-      [],
-      "
-    function moveFeedUp(event) {
-      const button = event.currentTarget;
-      const div = button.parentElement;
-      const container = div.parentElement;
-      if (div.previousElementSibling) {
-        container.insertBefore(div, div.previousElementSibling);
-      }
-    }
-
-    function moveFeedDown(event) {
-      const button = event.currentTarget;
-      const div = button.parentElement;
-      const container = div.parentElement;
-      if (div.nextElementSibling) {
-        container.insertBefore(div.nextElementSibling, div);
-      }
-    }
-
-    function removeFeed(event) {
-      const button = event.currentTarget;
-      const div = button.parentElement;
-      const container = div.parentElement;
-      container.removeChild(div);
-    }
-    ",
-    ),
-  ]
+            attribute.attribute("onclick", "moveFeedDown(event)"),
+          ],
+          [icons.chevron_down([])],
+        ),
+        html.button(
+          [
+            attribute.aria_label("Remove"),
+            attribute.type_("button"),
+            attribute.attribute("onclick", "removeFeed(event)"),
+          ],
+          [icons.trash_2([])],
+        ),
+      ]),
+    )
+  })
 }
 
-fn theme_toggle_view() -> List(element.Element(Nil)) {
-  [
-    html.button(
-      [
-        attribute.id("theme-toggle"),
-        attribute.attribute("onclick", "toggleTheme()"),
-        attribute.aria_label("Toggle Theme"),
-      ],
-      [icons.sun_moon([])],
-    ),
-    html.script(
-      [],
-      "
-    function toggleTheme() {
-      const userPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      let newTheme;
-
-      if (!currentTheme) {
-        newTheme = userPrefersDark ? 'light' : 'dark';
-      } else {
-        newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      }
-
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-      }
-    });
-    ",
-    ),
-  ]
+fn theme_toggle_button() -> element.Element(Nil) {
+  html.button(
+    [
+      attribute.id("theme-toggle"),
+      attribute.attribute("onclick", "toggleTheme()"),
+      attribute.aria_label("Toggle Theme"),
+    ],
+    [icons.sun_moon([])],
+  )
 }
