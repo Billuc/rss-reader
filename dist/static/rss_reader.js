@@ -69,3 +69,24 @@ document.addEventListener("DOMContentLoaded", () => {
         minute: "numeric",
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const location = new URL(window.location.href);
+    const feedUrls = location.searchParams.getAll("feed-url[]");
+
+    if (feedUrls.length > 0) {
+        localStorage.setItem("feedUrls", JSON.stringify(feedUrls));
+    } else {
+        const storedFeedUrls = localStorage.getItem("feedUrls");
+        if (!storedFeedUrls) return;
+        const urls = JSON.parse(storedFeedUrls);
+        if (urls.length === 0) return;
+
+        const params = new URLSearchParams();
+        for (const url of urls) {
+            params.append("feed-url[]", url);
+        }
+        
+        window.location.search = params.toString();
+    }
+})
