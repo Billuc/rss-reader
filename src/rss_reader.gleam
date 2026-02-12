@@ -62,10 +62,7 @@ pub fn handler(
         |> utils.await_with_timeout(3000, "Timeout fetching URL: " <> url),
       )
 
-      case res {
-        Ok(feed) -> view.feed_view(url, feed)
-        Error(e) -> view.error_view(e)
-      }
+      view.feed_result_view(url, res)
       |> element.to_string()
       |> glen.html(200)
     }

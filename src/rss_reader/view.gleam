@@ -109,43 +109,57 @@ fn feed_loader(
   )
 }
 
-pub fn feed_view(url: String, feed: glisse.RssDocument) -> element.Element(Nil) {
-  feed_loader(url, "click from:find .reload", [
-    html.div([attribute.class("feed")], [
-      html.h2([], [
-        html.a([attribute.href(feed.channel.link)], [
-          html.text(feed.channel.title),
-        ]),
-        html.button(
-          [
-            attribute.aria_label("Reload"),
-            attribute.type_("submit"),
-            attribute.class("reload"),
-          ],
-          [icons.rotate_cw([])],
-        ),
-      ]),
-      html.div([attribute.class("feed-items")], {
-        use item <- list.map(feed.channel.items)
-        let description =
-          item.description |> option.unwrap("") |> string.replace("\"", "")
+pub fn feed_result_view(
+  url: String,
+  result: Result(glisse.RssDocument, String),
+) -> element.Element(Nil) {
+  let children = case result {
+    Ok(feed) -> [feed_view(feed)]
+    Error(e) -> [error_view(e), reload_button()]
+  }
 
-        html.details([attribute.class("feed-item")], [
-          html.summary([attribute.class("item-title")], [
-            html.text(item.title |> option.unwrap("Untitled")),
-          ]),
-          html.p([attribute.class("item-description")], [
-            html.text(description <> " "),
-            html.a(
-              option.map(item.link, fn(l) { [attribute.href(l)] })
-                |> option.unwrap([]),
-              [html.text("Read more")],
-            ),
-          ]),
-        ])
-      }),
+  feed_loader(url, "click from:find .reload", children)
+}
+
+fn feed_view(feed: glisse.RssDocument) -> element.Element(Nil) {
+  html.div([attribute.class("feed")], [
+    html.h2([], [
+      html.a([attribute.href(feed.channel.link)], [
+        html.text(feed.channel.title),
+      ]),
+      reload_button(),
     ]),
+    html.div([attribute.class("feed-items")], {
+      use item <- list.map(feed.channel.items)
+      let description =
+        item.description |> option.unwrap("") |> string.replace("\"", "")
+
+      html.details([attribute.class("feed-item")], [
+        html.summary([attribute.class("item-title")], [
+          html.text(item.title |> option.unwrap("Untitled")),
+        ]),
+        html.p([attribute.class("item-description")], [
+          html.text(description <> " "),
+          html.a(
+            option.map(item.link, fn(l) { [attribute.href(l)] })
+              |> option.unwrap([]),
+            [html.text("Read more")],
+          ),
+        ]),
+      ])
+    }),
   ])
+}
+
+fn reload_button() {
+  html.button(
+    [
+      attribute.aria_label("Reload"),
+      attribute.type_("submit"),
+      attribute.class("reload"),
+    ],
+    [icons.rotate_cw([])],
+  )
 }
 
 pub fn error_view(error: String) -> element.Element(Nil) {
