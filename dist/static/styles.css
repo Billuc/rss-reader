@@ -78,6 +78,10 @@ div:has(.loader) {
   height: 100%;
 }
 
+.feed-container.htmx-request {
+  filter: blur(1px);
+}
+
 .feed {
   width: 100%;
   height: 100%;
