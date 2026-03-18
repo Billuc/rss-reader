@@ -1,3 +1,5 @@
+import brioche
+import brioche/server
 import envoy
 import gleam/dict
 import gleam/fetch
@@ -8,32 +10,34 @@ import gleam/javascript/promise
 import gleam/list
 import gleam/result
 import gleam/string
-import glen
 import glisse
 import lustre/element
 import rss_reader/node
+import rss_reader/static
 import rss_reader/utils
 import rss_reader/view
 
 pub fn main() {
-  let port =
-    envoy.get("GLEN_PORT") |> result.try(int.parse) |> result.unwrap(3002)
-  let base = envoy.get("GLEN_BASE") |> result.unwrap("/") |> sanitize_base
+  let port = envoy.get("PORT") |> result.try(int.parse) |> result.unwrap(3002)
+  let base = envoy.get("BASE") |> result.unwrap("/") |> sanitize_base
 
   node.console_log(
     "Starting server on port " <> int.to_string(port) <> " with base " <> base,
   )
 
-  glen.serve(port, fn(req) { handler(req, base) })
+  server.handler(fn(req, server) { handler(req, server, base) })
+  |> server.port(port)
+  |> server.serve()
 }
 
 pub fn handler(
-  req: glen.Request,
+  req: server.Request,
+  server: brioche.Server(_),
   base: String,
-) -> promise.Promise(glen.Response) {
+) -> promise.Promise(server.Response) {
   use <- log_request(req)
   use req <- check_base(req, base)
-  use <- glen.static(req, "/static", "./dist/static")
+  use <- static.serve_static(req, "/static", "./dist/static")
 
   case req.path {
     "/" -> {
@@ -47,7 +51,7 @@ pub fn handler(
 
       view.view(base, urls, [])
       |> element.to_document_string()
-      |> glen.html(200)
+      |> server.html_response(200)
       |> promise.resolve()
     }
     "/items" -> {
@@ -64,9 +68,9 @@ pub fn handler(
 
       view.feed_result_view(url, res)
       |> element.to_string()
-      |> glen.html(200)
+      |> server.html_response(200)
     }
-    _ -> glen.text("Not found", 404) |> promise.resolve()
+    _ -> utils.not_found_response() |> promise.resolve()
   }
 }
 
@@ -78,9 +82,9 @@ fn sanitize_base(base: String) -> String {
 }
 
 fn log_request(
-  req: glen.Request,
-  next: fn() -> promise.Promise(glen.Response),
-) -> promise.Promise(glen.Response) {
+  req: server.Request,
+  next: fn() -> promise.Promise(server.Response),
+) -> promise.Promise(server.Response) {
   let uuid = node.uuid()
   node.console_log(
     uuid
@@ -99,10 +103,10 @@ fn log_request(
 }
 
 fn check_base(
-  req: glen.Request,
+  req: server.Request,
   base: String,
-  next: fn(glen.Request) -> promise.Promise(glen.Response),
-) -> promise.Promise(glen.Response) {
+  next: fn(server.Request) -> promise.Promise(server.Response),
+) -> promise.Promise(server.Response) {
   case string.starts_with(req.path, base) {
     True -> {
       let new_path = case string.drop_start(req.path, string.length(base)) {
@@ -111,7 +115,7 @@ fn check_base(
       }
       next(request.Request(..req, path: new_path))
     }
-    False -> glen.text("Not found", 404) |> promise.resolve()
+    False -> utils.not_found_response() |> promise.resolve()
   }
 }
 

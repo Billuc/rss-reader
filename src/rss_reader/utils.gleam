@@ -1,10 +1,10 @@
+import brioche/server
 import gleam/dict
 import gleam/javascript/promise
 import gleam/list
 import gleam/option
 import gleam/string
 import gleam/uri
-import glen
 import rss_reader/node
 
 pub fn await_or_err(
@@ -48,7 +48,7 @@ pub fn res_map_or(res: Result(a, c), or: b, f: fn(a) -> b) -> b {
   }
 }
 
-pub fn query_dict(request: glen.Request) -> dict.Dict(String, String) {
+pub fn query_dict(request: server.Request) -> dict.Dict(String, String) {
   use query <- opt_map_or(request.query, dict.new())
   use query_elts <- res_map_or(uri.parse_query(query), dict.new())
   use acc, kv <- list.fold(query_elts, dict.new())
@@ -60,4 +60,8 @@ pub fn query_dict(request: glen.Request) -> dict.Dict(String, String) {
       option.None -> kv.1
     }
   })
+}
+
+pub fn not_found_response() -> server.Response {
+  server.response(404) |> server.text_body("Not Found")
 }
