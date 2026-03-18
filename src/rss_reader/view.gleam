@@ -85,7 +85,7 @@ pub fn view(
         html.a([attribute.href("https://billuc.github.io")], [
           html.text("Luc Billaud"),
         ]),
-        html.text(" using Gleam, Lustre, Brioche and Bun"),
+        html.text(" using Gleam, Lustre, Brioche and Bun."),
       ]),
       theme_toggle_button(),
     ]),

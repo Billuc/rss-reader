@@ -11,7 +11,10 @@ pub fn serve_static(
   directory: String,
   next: fn() -> promise.Promise(server.Response),
 ) -> promise.Promise(server.Response) {
-  use <- bool.lazy_guard(string.starts_with(req.path, prefix), next)
+  use <- bool.lazy_guard(
+    when: req.path |> string.starts_with(prefix),
+    otherwise: next,
+  )
 
   let path = directory <> req.path |> string.drop_start(string.length(prefix))
   serve_file(path)
@@ -20,9 +23,10 @@ pub fn serve_static(
 fn serve_file(path: String) -> promise.Promise(server.Response) {
   let static_file = file.new(path)
 
-  use exists_res <- promise.map(file.exists(static_file))
-  use exists <- utils.res_map_or(exists_res, utils.not_found_response())
-  use <- bool.guard(exists, utils.not_found_response())
+  use exists <- promise.map(file.exists(static_file))
 
-  static_file |> server.file_response(200)
+  case exists {
+    Ok(True) -> static_file |> server.file_response(200)
+    Ok(False) | Error(_) -> utils.not_found_response()
+  }
 }

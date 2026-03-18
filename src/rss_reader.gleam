@@ -32,7 +32,7 @@ pub fn main() {
 
 pub fn handler(
   req: server.Request,
-  server: brioche.Server(_),
+  _server: brioche.Server(_),
   base: String,
 ) -> promise.Promise(server.Response) {
   use <- log_request(req)

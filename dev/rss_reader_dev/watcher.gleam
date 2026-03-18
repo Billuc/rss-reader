@@ -42,7 +42,7 @@ fn rebuild_and_restart(
 }
 
 fn rebuild() -> promise.Promise(Result(Nil, Nil)) {
-  case deno_spawn(["gleam", "build"]) {
+  case spawn(["gleam", "build"]) {
     Ok(process) -> {
       wait_process(process)
       |> promise.map(fn(res) {
@@ -96,24 +96,23 @@ fn graceful_shutdown(ctx: DevContext) -> promise.Promise(DevContext) {
 }
 
 fn start_server(command: List(String)) -> Result(ChildProcess, String) {
-  command
-  |> deno_spawn()
+  command |> spawn()
 }
 
 type ChildProcess
 
-@external(javascript, "../dev_ffi.js", "deno_watch")
+@external(javascript, "../dev_ffi.js", "watch_dir")
 fn watch(
   path: String,
   initial_ctx: ctx,
   callback: fn(ctx, event) -> promise.Promise(ctx),
 ) -> promise.Promise(Nil)
 
-@external(javascript, "../dev_ffi.js", "deno_spawn")
-fn deno_spawn(args: List(String)) -> Result(ChildProcess, String)
+@external(javascript, "../dev_ffi.js", "spawn")
+fn spawn(args: List(String)) -> Result(ChildProcess, String)
 
-@external(javascript, "../dev_ffi.js", "deno_kill_process")
+@external(javascript, "../dev_ffi.js", "kill_process")
 fn kill_process(process: ChildProcess) -> promise.Promise(Result(Nil, String))
 
-@external(javascript, "../dev_ffi.js", "deno_wait_process")
+@external(javascript, "../dev_ffi.js", "wait_process")
 fn wait_process(process: ChildProcess) -> promise.Promise(Result(Nil, String))

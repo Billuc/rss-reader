@@ -1,11 +1,11 @@
 import argv
+import brioche/server
 import esgleam
 import gleam/float
 import gleam/io
 import gleam/javascript/promise
 import gleam/string
 import gleam/time/timestamp
-import glen
 import rss_reader
 import rss_reader/node
 import rss_reader_dev/watcher
@@ -15,7 +15,10 @@ pub fn main() {
 
   case args.arguments {
     ["bundle"] -> bundle()
-    ["_run"] -> run_dev_server()
+    ["_run"] -> {
+      start_dev_server()
+      Nil
+    }
     ["run"] -> watcher.start_watcher(dev_server_command())
     _ -> io.println("Usage: gleam dev [bundle|run]")
   }
@@ -44,43 +47,33 @@ fn dev_server_command() -> List(String) {
 
   // TODO: make cleaner
   // Did it that way because gleam dev run doesn't catch signals :/
-  [args.runtime, "--allow-all", "--watch=dist", args.program, "_run"]
+  [args.runtime, args.program, "_run"]
 }
 
-fn run_dev_server() {
+fn start_dev_server() {
   let start_time = timestamp.system_time() |> timestamp.to_unix_seconds()
   node.console_log("Starting development server on http://localhost:1212")
 
-  glen.serve(1212, fn(req) {
-    use <- handle_last_updated(req, start_time)
+  server.handler(fn(req, server) {
     use <- with_dev_script()
-    rss_reader.handler(req, "")
+    rss_reader.handler(req, server, "")
   })
-}
-
-fn handle_last_updated(
-  req: glen.Request,
-  start_time: Float,
-  next: fn() -> promise.Promise(glen.Response),
-) -> promise.Promise(glen.Response) {
-  case glen.path_segments(req) {
-    ["last-updated"] ->
-      glen.response(200)
-      |> glen.set_body(glen.Text(float.to_string(start_time)))
-      |> promise.resolve()
-    _ -> next()
-  }
+  |> server.static([
+    #("/last-updated", server.text_response(float.to_string(start_time))),
+  ])
+  |> server.port(1212)
+  |> server.serve()
 }
 
 fn with_dev_script(
-  next: fn() -> promise.Promise(glen.Response),
-) -> promise.Promise(glen.Response) {
+  next: fn() -> promise.Promise(server.Response),
+) -> promise.Promise(server.Response) {
   use res <- promise.map(next())
 
   case res.body {
-    glen.Text(body) -> {
+    server.Text(body) -> {
       let new_body = inject_reload_script(body)
-      res |> glen.set_body(glen.Text(new_body))
+      res |> server.set_body(server.Text(new_body))
     }
     _ -> res
   }

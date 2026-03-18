@@ -1,50 +1,52 @@
 import * as $gleam from "./gleam.mjs";
-import { debounce } from "jsr:@std/async/debounce";
+import { watch } from "fs/promises";
 
-export async function deno_watch(path, initialCtx, onEvent) {
-  let watcher = Deno.watchFs(path);
+export async function watch_dir(path, initialCtx, onEvent) {
   let context = initialCtx;
+  let watcher = watch(path, { recursive: true });
 
-  const onEventDebounced = debounce(async (ev) => {
-    context = await onEvent(context, ev);
+  for await (const event of watcher) {
+    context = await onEvent(context, event);
 
     if (context.continue === false) {
       watcher.close();
     }
-  }, 500);
-
-  for await (const event of watcher) {
-    await onEventDebounced(event);
   }
 }
 
-export function deno_spawn(args) {
+export function spawn(args) {
   try {
-    const [cmd, ...rest] = [...args];
-
-    const command = new Deno.Command(cmd, {
-      args: rest,
+    const proc = Bun.spawn({
+      cmd: args.toArray(),
+      stdout: "inherit",
     });
-    const child = command.spawn();
-    return new $gleam.Ok(child);
+    return new $gleam.Ok(proc);
   } catch (error) {
     return new $gleam.Error(error.message);
   }
 }
 
-export async function deno_kill_process(process) {
+/**
+ * @param {Bun.Subprocess} process 
+ * @returns 
+ */
+export async function kill_process(process) {
   try {
     process.kill("SIGTERM");
-    await process.status;
+    await process.exited;
     return new $gleam.Ok();
   } catch (error) {
     return new $gleam.Error(error.message);
   }
 }
 
-export async function deno_wait_process(process) {
+/**
+ * @param {Bun.Subprocess} process 
+ * @returns 
+ */
+export async function wait_process(process) {
   try {
-    await process.output();
+    await process.exited;
     return new $gleam.Ok();
   } catch (error) {
     return new $gleam.Error(error.message);
