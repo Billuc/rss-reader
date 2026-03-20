@@ -50,6 +50,10 @@ pub fn res_map_or(res: Result(a, c), or: b, f: fn(a) -> b) -> b {
 
 pub fn query_dict(request: server.Request) -> dict.Dict(String, String) {
   use query <- opt_map_or(request.query, dict.new())
+  let query = case query {
+    "?" <> q -> q
+    q -> q
+  }
   use query_elts <- res_map_or(uri.parse_query(query), dict.new())
   use acc, kv <- list.fold(query_elts, dict.new())
 

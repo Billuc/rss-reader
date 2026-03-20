@@ -22,3 +22,9 @@ Further documentation can be found at <https://hexdocs.pm/rss_reader>.
 gleam run   # Run the project
 gleam test  # Run the tests
 ```
+
+## Deployment 
+
+```sh
+gleam dev bundle # Bundle the project in a single JS file
+```
