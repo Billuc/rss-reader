@@ -138,12 +138,25 @@ fn feed_view(feed: glisse.RssDocument) -> element.Element(Nil) {
         html.summary([attribute.class("item-title")], [
           html.text(item.title |> option.unwrap("Untitled")),
         ]),
+        case description |> string.contains("<script") {
+          True ->
+            html.pre([attribute.class("item-description")], [
+              html.text(description),
+            ])
+          False ->
+            element.unsafe_raw_html(
+              "",
+              "pre",
+              [attribute.class("item-description")],
+              description,
+            )
+        },
         html.p([attribute.class("item-description")], [
-          html.text(description <> " "),
+          html.text("Article: "),
           html.a(
             option.map(item.link, fn(l) { [attribute.href(l)] })
               |> option.unwrap([]),
-            [html.text("Read more")],
+            [html.text(item.title |> option.unwrap("Untitled"))],
           ),
         ]),
       ])

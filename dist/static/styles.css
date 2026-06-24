@@ -135,6 +135,10 @@ div:has(.loader) {
   opacity: 0.8;
   padding-left: 1em;
   word-break: break-word;
+  white-space: pre-wrap;
+}
+pre.item-description {
+  font-size: medium;
 }
 
 header {
